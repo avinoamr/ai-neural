@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+    body {
+        margin-top: 50px;
+    }
+
+    .neuron {
+        width: 20px;
+        height: 20px;
+        border: 1px solid black;
+        border-radius: 50%;
+        margin: 10px;
+    }
+
+    .neuron.active {
+        background: green;
+    }
+
+    .layer {
+        display: flex;
+        /*width: 500px;*/
+        /*margin: 0 auto;*/
+    }
+    </style>
+</head>
+<body>
+    <input id="input" type="text"></input>
+    <button id="advance">Advance</button>
+    <button id="reward">Reward</button>
+    <script>
+
+
+    const NEURONS = 300
+    const LAYERS = 6
+    const SYNAPSES_PER_NEURON = 24
+
+    // var neurons = createNeurons(NEURONS, LAYERS, SYNAPSES_PER_NEURON)
+    var neurons = [
+        { idx: "inp1", layer: 0, state: false, T: 1, synapses: [{ i: 02, P: 0 }] },
+        { idx: "inp2", layer: 0, state: false, T: 1, synapses: [{ i: 02, P: 0 }] },
+        // { idx: "inp3", layer: 0, state: false, T: 1, synapses: [{ i: 04, P: 0 }] },
+        // { idx: "inp4", layer: 0, state: false, T: 1, synapses: [{ i: 04, P: 0 }] },
+        // { idx: "inp5", layer: 0, state: false, synapses: [{ i: 12, p: .5 }, { i: 13 }] },
+        // { idx: "inp6", layer: 0, state: false, synapses: [{ i: 13, p: .5 }, { i: 14 }] },
+        // { idx: "inp7", layer: 0, state: false, synapses: [{ i: 14, p: .5 }, { i: 15 }] },
+        // { idx: "inp8", layer: 0, state: false, synapses: [{ i: 15, p: .5 }, { i: 08 }] },
+
+        { idx: "out1", layer: 1, state: false, T: 1, synapses: [] },
+        // { idx: "out2", layer: 1, state: false, synapses: [] },
+        // { idx: "out3", layer: 1, state: false, synapses: [] },
+        // { idx: "out4", layer: 1, state: false, synapses: [] },
+        // { idx: "out5", layer: 1, state: false, synapses: [] },
+        // { idx: "out6", layer: 1, state: false, synapses: [] },
+        // { idx: "out7", layer: 1, state: false, synapses: [] },
+        // { idx: "out8", layer: 1, state: false, synapses: [] },
+    ]
+
+    render(neurons)
+
+    var layer = 0
+    document.querySelector('#advance').addEventListener('click', function () {
+        var target = neurons[2]
+        target.charge = 0
+
+        for (var i = 0; i < 2; i++) {
+            if (!neurons[i].state) {
+                continue // not firing
+            }
+
+            for (var s of neurons[i].synapses) {
+                neurons[s.i].charge += s.P // g(s.P, 0.1)(Math.random())
+            }
+        }
+
+        var chance = (target.charge + target.T) / 2
+
+        console.log(`charge: ${target.charge} ; T: ${target.T} ; Chance: ${chance}`)
+        target.state = Math.random() <= chance
+
+        return
+    })
+
+    document.querySelector('#reward').addEventListener('click', function () {
+        var target = neurons[2]
+
+        target.T *= 0.8
+        var charge = 2 - 2 * target.T
+
+        // count how many lit synapses are connected to us?
+        var incoming = []
+        for (var n of neurons) {
+            if (!n.state) {
+                continue
+            }
+
+            for (var s of n.synapses) {
+                if (neurons[s.i] == target) {
+                    incoming.push(s)
+                }
+            }
+        }
+
+        for (var s of incoming) {
+            s.P = charge / incoming.length
+        }
+
+        console.log('REWARD. REWIRE')
+    })
+
+    function advance(neurons, layer) {
+        next = neurons.filter((n) => n.layer === layer)
+        for (var n of next) {
+            for (var i = 0; n.state && i < n.synapses.length; i += 1) {
+                var idx = n.synapses[i]
+                neurons[idx].state = true
+            }
+        }
+    }
+
+    function createNeurons(numNeurons = 0, numLayers = 0, synapsesPerNeuron = 0) {
+        // divided by 2 because we only want the outgoing synapses, not dendrites
+        const neuronsPerLayer = Math.floor(numNeurons / numLayers / 2)
+
+        var neurons = []
+        for (var i = 0; i < numNeurons; i++) {
+            var layer = Math.floor(i / neuronsPerLayer)
+            var targetLayer = (layer + 1) % numLayers
+
+            // candidate neurons at the target layer
+            var targets = []
+            for (var j = 0; j < neuronsPerLayer; j++) {
+                targets.push(targetLayer * neuronsPerLayer + j)
+            }
+
+            // choose randomly N targets for synapses
+            var synapses = []
+            var l = randInt(0, synapsesPerNeuron * 2)
+            for (var j = 0; j < l && targets.length; j++) {
+                var idx = randInt(0, targets.length - 1)
+                var target = targets.splice(idx, 1)[0]
+                synapses.push(target)
+            }
+
+            neurons.push({
+                idx: i,
+                layer: layer,
+                state: false,
+                synapses: synapses
+            })
+        }
+        return neurons
+    }
+
+
+    function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min
+    }
+
+    function render(neurons) {
+        // create a domElement for each neuron
+        for (var n of neurons) {
+            n.domElement = document.createElement('div')
+            n.domElement.className = 'neuron'
+            n.domElement.addEventListener('click', (function (n) {
+                return function() {
+                    n.state = !n.state
+                }
+            })(n))
+        }
+
+        // group neurons by layers
+        var layers = []
+        for (var n of neurons) {
+            if (!layers[n.layer]) {
+                layers[n.layer] = []
+                layers[n.layer].domElement = document.createElement('div')
+                layers[n.layer].domElement.className = 'layer'
+                document.body.appendChild(layers[n.layer].domElement)
+            }
+
+            layers[n.layer].push(n)
+            layers[n.layer].domElement.appendChild(n.domElement)
+        }
+
+        function update() {
+            for (var n of neurons) {
+                n.domElement.classList.toggle('active', n.state)
+            }
+            requestAnimationFrame(update)
+        }
+
+        update()
+    }
+
+    function g(mean, stdev) {
+        var y2;
+        var use_last = false;
+        return function() {
+            var y1;
+            if(use_last) {
+               y1 = y2;
+               use_last = false;
+            }
+            else {
+                var x1, x2, w;
+                do {
+                     x1 = 2.0 * Math.random() - 1.0;
+                     x2 = 2.0 * Math.random() - 1.0;
+                     w  = x1 * x1 + x2 * x2;
+                } while( w >= 1.0);
+                w = Math.sqrt((-2.0 * Math.log(w))/w);
+                y1 = x1 * w;
+                y2 = x2 * w;
+                use_last = true;
+           }
+
+           return mean + stdev * y1;
+       }
+    }
+
+    function stat(fn, n) {
+        n = n || 50000
+        var s = 0; c = 0
+        var max = -Infinity
+        var min = +Infinity
+        for (var i = 0; i < n; i++) {
+            var v = fn(Math.random())
+            max = Math.max(max, v)
+            min = Math.min(min, v)
+            s += v
+            c += 1
+        }
+
+        var avg = s / c
+        return { max, min, avg }
+    }
+
+    </script>
+</body>
+</html>
