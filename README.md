@@ -1,2 +1,2 @@
-# ai-neural
-Simple neural network visualization
+# ai
+Playground for experimenting with ai
