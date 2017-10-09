@@ -60,12 +60,12 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     #
     # thus we need to multiply all inputs with their weights, element wise, and
     # sum up the result.
-    prediction = sum(inp * w, b) # adding the bias as well.
+    out = sum(inp * w, b) # adding the bias as well.
 
     # now, lets find our current loss - comparing our prediction to the actual
     # value produced by f():
-    out = loss(prediction, f(inp))
-    print "#%d f(%s) = %f (loss: %f)" % (j, inp, f(inp), out)
+    l = loss(out, f(inp))
+    print "#%d f(%s) = %f (loss: %f)" % (j, inp, f(inp), l)
 
     # just as before, we now want to make infinitisimal changes to our weights,
     # in order to find how the loss changes w.r.t to every individual weight.
@@ -82,17 +82,17 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
         # epsilon to the current weight i. Also notice that the target of our
         # loss doesn't change obviously (because the inp is the same), only the
         # predition does
-        outi = loss(sum(inp * (w + e), b), f(inp))
+        li = loss(sum(inp * (w + e), b), f(inp))
 
         # derviative of the input - or how the loss() changes w.r.t inp[i]
-        d[i] = (outi - out) / E
+        d[i] = (li - l) / E
 
     # exactly similarily, we want to compute the derivative of the loss function
     # this time w.r.t a tiny change in the bias. You may notice that since this
     # is an exact replication of the derivations per weight, above, we can avoid
     # this code-duplication by regarding the bias just as one extra weight.
-    outb = loss(sum(inp * w, b + E), f(inp))
-    db = (outb - out) / E
+    lb = loss(sum(inp * w, b + E), f(inp))
+    db = (lb - l) / E
 
     # now we update the weights, same as before.
     # element-wise update to the new inp in the gradient direction. ie:

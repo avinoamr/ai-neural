@@ -26,7 +26,7 @@ def loss(actual):
 # values to have a more generalized code that can adhere to any N-input function
 inp = np.random.rand(N) * 2 - 1 # N-sized vector of random numbers
 for j in xrange(ITERATIONS): # can we stop early once we reach our target?
-    out = loss(f(inp))
+    l = loss(f(inp))
     print "#%d f(%s) = %f" % (j, inp, f(inp))
 
     # N samples (instead of 2), inifinitsimal points around the current inp
@@ -41,10 +41,10 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
         e[i] = E
 
         # sample the loss function after adding E to inp[i]
-        outi = loss(f(inp + e))
+        li = loss(f(inp + e))
 
         # derviative of the input - or how the loss() changes w.r.t inp[i]
-        d[i] = (outi - out) / E
+        d[i] = (li - l) / E
 
     # element-wise update to the new inp in the gradient direction. ie:
     #   inp[i] = STEP * d[i] * - 1 ; for every i in N = all of the inputs

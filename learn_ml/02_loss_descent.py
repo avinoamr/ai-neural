@@ -44,16 +44,16 @@ y = np.random.rand() * 2 - 1
 # (supervised) by a human for every given input. We can instead regard that
 # value as a compiled black-boxed function.
 for i in xrange(ITERATIONS): # can we stop early once we reach our target?
-    out = loss(f(x, y))
+    l = loss(f(x, y))
     print "#%d f(%f, %f) = %f" % (i, x, y, f(x, y))
 
     # two samples, inifinitsimal points around x and y
-    outx = loss(f(x + E, y))
-    outy = loss(f(x, y + E))
+    lx = loss(f(x + E, y))
+    ly = loss(f(x, y + E))
 
     # derivatives of x and y - or how the output of loss() changes w.r.t x, y
-    dx = (outx - out) / E
-    dy = (outy - out) / E
+    dx = (lx - l) / E
+    dy = (ly - l) / E
 
     # update to the new x, y in the gradient direction
     x += STEP * dx * -1 # looking for the minima, walk against the gradient

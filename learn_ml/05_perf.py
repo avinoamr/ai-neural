@@ -89,11 +89,11 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     inp = np.random.rand(N) * 2 - 1 # cheat.
 
     # make our prediction based on our current weights
-    prediction = sum(inp * w, b)
+    out = sum(inp * w, b)
     target = f(inp)
 
-    out = loss(prediction, target)
-    print "#%d f(%s) = %f (loss: %f)" % (j, inp, target, out)
+    l = loss(out, target)
+    print "#%d f(%s) = %f (loss: %f)" % (j, inp, target, l)
 
     # now is the big change: we compute the derivative of the loss function
     # w.r.t each w[i] by multiplying the input, element-wise, with the
@@ -105,8 +105,8 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     # incentive - the fact that it's a simple scalar-vector multiplication,
     # without probes into f, GPUs will be able to significantly further improve
     # the performance of this operation!
-    d = 2 * (prediction - target) * inp # that's it! no probes in f
-    db = 2 * (prediction - target) # bias not dependent on inp, only on the loss
+    d = 2 * (out - target) * inp # that's it! no probes in f
+    db = 2 * (out - target) # bias not dependent on inp, only on the loss
 
     # now update the weights and bias, same as before.
     w += STEP * d * -1
