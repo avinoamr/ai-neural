@@ -8,6 +8,8 @@
 
     .neuron {
         width: 20px;
+        min-width: 20px;
+        max-width: 20px;
         height: 20px;
         border: 1px solid black;
         border-radius: 50%;
@@ -28,59 +30,147 @@
 <body>
     <input id="input" type="text"></input>
     <button id="advance">Advance</button>
+    <input id="output" type="text" disabled></input>
     <button id="reward">Reward</button>
     <script>
+    function intToNeurons(c) {
+        var neurons = [0, 0, 0, 0, 0, 0, 0, 0]
+        for (var i = 7; i >= 0; i--) {
+            neurons[i] = (c & 1) ? 1 : 0
+            c >>= 1
+        }
 
+        return neurons
+    }
 
-    const NEURONS = 300
-    const LAYERS = 6
-    const SYNAPSES_PER_NEURON = 24
+    function neuronsToInt(n) {
+        var c = 0
+        for (var i = 0; i < 8; i++) {
+            c <<= 1
+            c |= n[i]
+        }
+        return c
+    }
 
-    // var neurons = createNeurons(NEURONS, LAYERS, SYNAPSES_PER_NEURON)
+    function fn(n, ds) {
+        var charIdx = Math.floor((n.idx - 1) / 8)
+        var bitIdx = (n.idx - 1) % 8
+        var charCode = 'hello'.charCodeAt(charIdx)
+        return intToNeurons(charCode)[bitIdx]
+    }
+
     var neurons = [
-        { idx: "inp1", layer: 0, state: false, T: 1, synapses: [{ i: 02, P: 0 }] },
-        { idx: "inp2", layer: 0, state: false, T: 1, synapses: [{ i: 02, P: 0 }] },
-        // { idx: "inp3", layer: 0, state: false, T: 1, synapses: [{ i: 04, P: 0 }] },
-        // { idx: "inp4", layer: 0, state: false, T: 1, synapses: [{ i: 04, P: 0 }] },
-        // { idx: "inp5", layer: 0, state: false, synapses: [{ i: 12, p: .5 }, { i: 13 }] },
-        // { idx: "inp6", layer: 0, state: false, synapses: [{ i: 13, p: .5 }, { i: 14 }] },
-        // { idx: "inp7", layer: 0, state: false, synapses: [{ i: 14, p: .5 }, { i: 15 }] },
-        // { idx: "inp8", layer: 0, state: false, synapses: [{ i: 15, p: .5 }, { i: 08 }] },
+        { idx: 01, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 02, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 03, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 04, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 05, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 06, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 07, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 08, layer: 1, state: false, synapses: [], fn: fn },
 
-        { idx: "out1", layer: 1, state: false, T: 1, synapses: [] },
-        // { idx: "out2", layer: 1, state: false, synapses: [] },
-        // { idx: "out3", layer: 1, state: false, synapses: [] },
-        // { idx: "out4", layer: 1, state: false, synapses: [] },
-        // { idx: "out5", layer: 1, state: false, synapses: [] },
-        // { idx: "out6", layer: 1, state: false, synapses: [] },
-        // { idx: "out7", layer: 1, state: false, synapses: [] },
-        // { idx: "out8", layer: 1, state: false, synapses: [] },
+        { idx: 09, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 10, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 11, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 12, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 13, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 14, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 15, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 16, layer: 1, state: false, synapses: [], fn: fn },
+
+        { idx: 17, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 18, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 19, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 20, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 21, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 22, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 23, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 24, layer: 1, state: false, synapses: [], fn: fn },
+
+        { idx: 25, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 26, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 27, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 28, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 29, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 30, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 31, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 32, layer: 1, state: false, synapses: [], fn: fn },
+
+        { idx: 33, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 34, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 35, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 36, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 37, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 38, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 39, layer: 1, state: false, synapses: [], fn: fn },
+        { idx: 40, layer: 1, state: false, synapses: [], fn: fn },
     ]
 
     render(neurons)
 
-    var layer = 0
-    document.querySelector('#advance').addEventListener('click', function () {
-        var target = neurons[2]
-        target.charge = 0
-
-        for (var i = 0; i < 2; i++) {
-            if (!neurons[i].state) {
-                continue // not firing
-            }
-
-            for (var s of neurons[i].synapses) {
-                neurons[s.i].charge += s.P // g(s.P, 0.1)(Math.random())
-            }
+    // advance the thought processes, evaluating PRNs for all neurons
+    function advance() {
+        for (var n of neurons) {
+            let fn = n.fn || (() => n.state)
+            n.state = fn(n, dendritesOf(n))
         }
 
-        var chance = (target.charge + target.T) / 2
+        var start = 0
+        var out = ''
+        for (var start = 0; start < neurons.length; start += 8) {
+            var n = neurons.slice(start, start + 8).map((n) => n.state)
+            var c = neuronsToInt(n)
+            out += String.fromCharCode(c)
+        }
 
-        console.log(`charge: ${target.charge} ; T: ${target.T} ; Chance: ${chance}`)
-        target.state = Math.random() <= chance
+        return out
+    }
 
-        return
+    function dendritesOf(n) {
+        var dendrites = []
+        for (var n0 of neurons) {
+            for (var s of n0.synapses) {
+                if (s.i == n.idx) {
+                    dendrites.push(n0.state)
+                }
+            }
+        }
+        return dendrites
+    }
+
+    document.querySelector('#advance').addEventListener('click', function () {
+        document.querySelector('#output').value = advance()
     })
+
+    // pattern reconition neuron. Boolean function determines if the provided
+    // neuron id should fire or not.
+    function prn(neuronId) {
+        // find all of the dendrites for this neuron
+        var dendrites = neurons.reduce((dendrites, n) => {
+            for (var s of n.synapses) {
+                if (s.i != neuronId) {
+                    continue // doesn't belong to this neuron
+                }
+
+                s.S = n.state ? 1 : 0
+                dendrites.push(s)
+            }
+            return dendrites
+        }, [])
+
+        return true // always fire
+    }
+
+    function f(dendries) {
+        var N = dendries.reduce((n, d) => Math.max(d.S, n), -Infinity)
+        var S = dendries.reduce((n, d) => d.S + n, 0)
+        var Max = 0.1 * N + 0.5
+        var Min = 1 - Max
+
+        // var f1 = Min + (Max - Min) / S
+
+        console.log((Max - Min) / S)
+    }
 
     document.querySelector('#reward').addEventListener('click', function () {
         var target = neurons[2]
@@ -108,51 +198,6 @@
 
         console.log('REWARD. REWIRE')
     })
-
-    function advance(neurons, layer) {
-        next = neurons.filter((n) => n.layer === layer)
-        for (var n of next) {
-            for (var i = 0; n.state && i < n.synapses.length; i += 1) {
-                var idx = n.synapses[i]
-                neurons[idx].state = true
-            }
-        }
-    }
-
-    function createNeurons(numNeurons = 0, numLayers = 0, synapsesPerNeuron = 0) {
-        // divided by 2 because we only want the outgoing synapses, not dendrites
-        const neuronsPerLayer = Math.floor(numNeurons / numLayers / 2)
-
-        var neurons = []
-        for (var i = 0; i < numNeurons; i++) {
-            var layer = Math.floor(i / neuronsPerLayer)
-            var targetLayer = (layer + 1) % numLayers
-
-            // candidate neurons at the target layer
-            var targets = []
-            for (var j = 0; j < neuronsPerLayer; j++) {
-                targets.push(targetLayer * neuronsPerLayer + j)
-            }
-
-            // choose randomly N targets for synapses
-            var synapses = []
-            var l = randInt(0, synapsesPerNeuron * 2)
-            for (var j = 0; j < l && targets.length; j++) {
-                var idx = randInt(0, targets.length - 1)
-                var target = targets.splice(idx, 1)[0]
-                synapses.push(target)
-            }
-
-            neurons.push({
-                idx: i,
-                layer: layer,
-                state: false,
-                synapses: synapses
-            })
-        }
-        return neurons
-    }
-
 
     function randInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min
