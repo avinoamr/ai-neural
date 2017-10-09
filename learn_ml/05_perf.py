@@ -2,12 +2,12 @@
 # of inputs - but at a massive performance cost. The computation of the slope,
 # or derivative of the loss function, w.r.t every single input param. Thus, for
 # each iteration, we perform O(N) probes into the f function, where N is the
-# number of parameters in the input vector.. Suprisingly (to me at least) we can
-# do better. We can compute the derivatives without accessing the f function
+# number of parameters in the input vector.[1] Suprisingly (to me at least) we
+# can do better. We can compute the derivatives without accessing the f function
 # more than once. We'll start here with the assumption that the function we're
 # optimizing for is linear - i.e. can be reduced to the form:
 #
-#       f(x) = w1x1 + w2x2 + ... + wNxN + C
+#       f(x, y, ...) = ax + by + ... + C
 #
 # Remember that our loss function is the distance between our prediction and the
 # correct target value squared:
@@ -61,33 +61,35 @@
 # The implication is that we only need to compute (y - t) once for all
 # parameters in the input, and then multiply individually by the input
 # correspnding to each weight.
+#
+# [1] Generally, the purpose of these excercises are not to get the best
+# performance, but to build intuition, however this iterative process also
+# generates a lot of code that will make it more difficult to proceed without
+# eliminating some of the overhead.
 import numpy as np
 
 # constants
 # Notice that E (epsilon) is now removed because we're not probing anymore!
-N = 2 # size of the input vector; number of parameters as input
-STEP = 0.01 # size of the steps to take in the gradient direction
-ITERATIONS = 1000 # number of probes/step to take - in fact, we only need ~100
+N = 2
+STEP = 0.01
+ITERATIONS = 1000
 
-# same as before, weights to be learned are: [1, 2, 3, ...]
+# same as before, weights to be learned are: [1, 2, 3, ...], and bias 10
 def f(X):
-    return sum([(i + 1) * x for i, x in enumerate(X)])
+    return 10 + sum([(i + 1) * x for i, x in enumerate(X)])
 
 def loss(actual, target):
     return (actual - target) ** 2
 
-# initial weights. before we've learned the input, now that the input is given
-# and immutable we learn the weights by which to multiply this input. In fact,
-# these weights can represent any linear function (almost), so all that's left
-# to do is find these weights and we have our function!
-w = np.random.rand(N) * 2 - 1 # N-sized vector of random numbers
+w = np.random.rand(N) * 2 - 1
+b = np.random.rand() * 2 - 1
 for j in xrange(ITERATIONS): # can we stop early once we reach our target?
 
     # just like before - we're assuming that these inputs were given
     inp = np.random.rand(N) * 2 - 1 # cheat.
 
     # make our prediction based on our current weights
-    prediction = sum(inp * w)
+    prediction = sum(inp * w, b)
     target = f(inp)
 
     out = loss(prediction, target)
@@ -104,10 +106,15 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     # without probes into f, GPUs will be able to significantly further improve
     # the performance of this operation!
     d = 2 * (prediction - target) * inp # that's it! no probes in f
+    db = 2 * (prediction - target) # bias not dependent on inp, only on the loss
 
-    # now update the weights, same as before.
+    # now update the weights and bias, same as before.
     w += STEP * d * -1
+    b += STEP * db * -1
 
-# finally - lets print out our weights to see what we did:
-# you should expect the weights to resemble the ones in f().
-print "W = %s" % w
+    # notice that the update rule for the bias is identical to the one of the
+    # weights, except that the input is fixed at value of 1. We can use that to
+    # remove these extra lines of code if we add one artificial input equal to
+    # 1 and its corresponding weight. Maybe next time :)
+
+print "W = %s ; b = %s" % (w, b)
