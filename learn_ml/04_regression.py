@@ -22,20 +22,20 @@
 import numpy as np
 
 # no constant TARGET; we need to find it.
-N = 2
+N = 3
 E = 0.0001
 STEP = 0.01
 ITERATIONS = 1000
 
 # slightly different implementation of f() just for fun:
-#   f(X) = 10 + x1 + 2x2 + 3x3 + ...
+#   f(X) = 10 + 8x1 -2x2 + x3/2
 #
-# So the learned weights are [1, 2, 3, ...] and the bias 10.
+# So the learned weights are [8, -2, .5] and the bias 10.
 #
 # Notice that this code will not be able to learn non-linear functions (x^2).
 # But many real-life situations can be reduced to a linear expression.
 def f(X):
-    return 10 + sum([(i + 1) * x for i, x in enumerate(X)])
+    return 10 + 8 * X[0] - 2 * X[1] + X[2] / 2
 
 # same loss function as before, except that now it can't rely on a constant
 # TARGET value for all inputs, but instead it receives the value as input
