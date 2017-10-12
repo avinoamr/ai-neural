@@ -2,12 +2,9 @@
 # of inputs - but at a massive performance cost. The computation of the slope,
 # or derivative of the loss function, w.r.t every single input param. Thus, for
 # each iteration, we perform O(N) probes into the f function, where N is the
-# number of parameters in the input vector.[1] Suprisingly (to me at least) we
-# can do better. We can compute the derivatives without accessing the f function
-# more than once. We'll start here with the assumption that the function we're
-# optimizing for is linear - i.e. can be reduced to the form:
-#
-#       f(x, y, ...) = ax + by + ... + C
+# number of parameters in the input vector.[1]. This method is known as
+# numerical gradient descent. Suprisingly (to me at least) we can do better. We
+# can compute the derivatives without accessing the loss function at all!
 #
 # Remember that our loss function is the distance between our prediction and the
 # correct target value squared:
@@ -52,15 +49,10 @@
 # in: loss'(x) w.r.t w[i] = (y - t) * x[i] . We're not using this version here.
 # this is also known as the delta rule.
 #
-# Another intuition is that if we get an error in our prediction, the the form
-# of some loss numeric value, we want to update our prediction in proportion to
-# that loss - thus a large mistake is likely to trigger a large change to our
-# prediction - but now we scale that change by the actual input, such that a
-# large input will result in a larger change than a small input.
-#
-# The implication is that we only need to compute (y - t) once for all
-# parameters in the input, and then multiply individually by the input
-# correspnding to each weight.
+# The implication is that we only need to compute the derivative of our loss
+# function directly for all parameters in the input, and then multiply
+# individually by the input correspnding to each weight, using simple algebra,
+# instead of repetitive probing.
 #
 # [1] Generally, the purpose of these excercises are not to get the best
 # performance, but to build intuition, however this iterative process also
@@ -70,13 +62,13 @@ import numpy as np
 
 # constants
 # Notice that E (epsilon) is now removed because we're not probing anymore!
-N = 2
+N = 3
 STEP = 0.01
 ITERATIONS = 1000
 
 # same as before, weights to be learned are: [1, 2, 3, ...], and bias 10
 def f(X):
-    return 10 + sum([(i + 1) * x for i, x in enumerate(X)])
+    return 10 + 8 * X[0] - 2 * X[1] + X[2] / 2
 
 def loss(actual, target):
     return (actual - target) ** 2
