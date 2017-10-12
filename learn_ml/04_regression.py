@@ -1,8 +1,10 @@
 # We are now able to find N x-values such that:
+#
 #   f(x) = TARGET ; x = ?
 #
 # But the real-life use-cases are exactly inversed: we're given an input X
 # vector and we need to find the answer:
+#
 #   f(x) = ?
 #
 # of course, we don't know what f does. But lets start by first covering all
@@ -53,6 +55,9 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     # cheat, by just randomizing an input
     inp = np.random.rand(N) * 2 - 1 # cheat.
 
+    # the target, or correct value, for this input
+    target = f(inp)
+
     # we start by making our prediction. Again, because it's assumed to be a
     # linear function, thus it must be reducible to the form of:
     #
@@ -64,8 +69,8 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
 
     # now, lets find our current loss - comparing our prediction to the actual
     # value produced by f():
-    l = loss(out, f(inp))
-    print "#%d f(%s) = %f (loss: %f)" % (j, inp, f(inp), l)
+    l = loss(out, target)
+    print "#%d f(%s) = %f (loss: %f)" % (j, inp, target, l)
 
     # just as before, we now want to make infinitisimal changes to our weights,
     # in order to find how the loss changes w.r.t to every individual weight.
@@ -82,7 +87,7 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
         # epsilon to the current weight i. Also notice that the target of our
         # loss doesn't change obviously (because the inp is the same), only the
         # predition does
-        li = loss(sum(inp * (w + e), b), f(inp))
+        li = loss(sum(inp * (w + e), b), target)
 
         # derviative of the input - or how the loss() changes w.r.t inp[i]
         d[i] = (li - l) / E
@@ -91,7 +96,7 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     # this time w.r.t a tiny change in the bias. You may notice that since this
     # is an exact replication of the derivations per weight, above, we can avoid
     # this code-duplication by regarding the bias just as one extra weight.
-    lb = loss(sum(inp * w, b + E), f(inp))
+    lb = loss(sum(inp * w, b + E), target)
     db = (lb - l) / E
 
     # now we update the weights, same as before.

@@ -87,11 +87,12 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
 
     # just like before - we're assuming that these inputs were given
     inp = np.random.rand(N) * 2 - 1 # cheat.
+    target = f(inp)
 
     # make our prediction based on our current weights
     out = sum(inp * w, b)
-    target = f(inp)
 
+    # compute the loss
     l = loss(out, target)
     print "#%d f(%s) = %f (loss: %f)" % (j, inp, target, l)
 

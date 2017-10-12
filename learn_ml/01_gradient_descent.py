@@ -7,13 +7,15 @@
 # descent - we add some amount to our initial inputs such that the f function
 # is expected to be lower. Repeat for a 1000 iterations and stop. The final
 # inputs will be the local minima of the function, if one exists.
-# http://karpathy.github.io/neuralnets/
-
-# f(x,y) - the function we want to maximize.
+#
+# f(x,y) - the function we want to maximize. It can be anything you want!
+# Note however, that if this function doesn't have a minima, it can get
+# inifinitely negative, and thus no minima will be found even after infinite
+# iterations. So, for this demonstration, we'll remove negatives by squaring it.
 def f(x, y):
-    return x + y
+    return (x - y) ** 2
 
-# constants - these can be learned as well!
+# constants - these can be learned as well! Maybe we'll cover it later.
 E = 0.0001 # epsilon; infinitisimal size of probes to find derivatives
 STEP = 0.01 # size of the steps to take in the gradient direction
 ITERATIONS = 1000 # number of probes/step to take
