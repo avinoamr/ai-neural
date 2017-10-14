@@ -19,14 +19,16 @@ X = [1,   2,   3,   4,   5,   6,   7,   8,   9 ,  10 ] # 1-dimensional input
 T = [101, 201, 301, 401, 501, 601, 701, 801, 901, 1001] # output
 N = 1 # 1-dimension in the data above.
 
-# instead of iterations, we now have a concept of epochs. In the past, we
-# jhad an infinite data set which we'd consumed until the model was learned.
-# Here we don't. And just 10 data points isn't enough for our model to learn.
-# There are several work arounds to this like: feature-scaling, adaptive
-# learning rate, mini-batching - but to keep it simple here, we can just
-# duplicate the data multiple times. We'll do it by iterating over the data
-# "EPOCHS" times,
-EPOCHS = 1
+# instead of iterations, we now have a concept of epochs. In the past, we had an
+# infinite data set which we consumed until the model was learned. Here we
+# don't. And just 10 data points isn't enough for our model to learn. There are
+# several work arounds to this like: feature-scaling, adaptive learning rate,
+# mini-batching - but to keep it simple here, we can just duplicate the data
+# multiple times. We'll do it by iterating over the data "EPOCHS" times,
+#
+# Notice that if we're using just a few epochs (10-20), (a) the loss wouldn't
+# converge to zero just yet, and (b) the bias wouldn't converge to 1.
+EPOCHS = 10
 
 # constants. ITERATIONS isn't here anymore because we can't just iterate
 # arbitrarily as we have a finite set of inputs.
