@@ -6,6 +6,7 @@
 # generate inputs, and will have no access to the function we're trying to model
 # so that we can't experiment with it. All we have is a list of observations:
 import numpy as np
+import random
 
 # There's no f function anymore. We only have 10 observations encoded as a list
 # of inputs (X) and a list of targets (T). For a human it's super easy to pick
@@ -18,46 +19,53 @@ X = [1,   2,   3,   4,   5,   6,   7,   8,   9 ,  10 ] # 1-dimensional input
 T = [101, 201, 301, 401, 501, 601, 701, 801, 901, 1001] # output
 N = 1 # 1-dimension in the data above.
 
+# instead of iterations, we now have a concept of epochs. In the past, we
+# jhad an infinite data set which we'd consumed until the model was learned.
+# Here we don't. And just 10 data points isn't enough for our model to learn.
+# There are several work arounds to this like: feature-scaling, adaptive
+# learning rate, mini-batching - but to keep it simple here, we can just
+# duplicate the data multiple times. We'll do it by iterating over the data
+# "EPOCHS" times,
+EPOCHS = 1
+
 # constants. ITERATIONS isn't here anymore because we can't just iterate
 # arbitrarily as we have a finite set of inputs.
 STEP = 0.01
 def loss(actual, target):
     return (actual - target) ** 2
 
+
 w = np.random.rand(N) - .5
 b = np.random.rand() - .5
-for x, t in zip(X, T):
+data = zip(X, T) # single data set of (x, y) tuples
 
-    # same as before, we'll compute our prediction
-    y = sum(x * w, b)
+# instead generating a massive list here, we're just repeating the same one.
+for i in xrange(EPOCHS):
 
-    # compute the loss
-    l = loss(y, t)
-    print "f(%s) = %f (y: %f, loss: %f)" % (x, t, y, l)
+    # as it turns out - the order of the data matters. We'll shuffle it to make
+    # the convergence a bit faster by trying out differe orders.
+    # https://stats.stackexchange.com/questions/242004/why-do-neural-network-researchers-care-about-epochs
+    random.shuffle(data)
+    for x, t in data:
 
-    # derivatives
-    dw = 2 * (y - t) * x
-    db = 2 * (y - t)
+        # same as before, we'll compute our prediction
+        y = sum(x * w, b)
 
-    # debug the derivatives ; read below.
-    # print "dw = %f ; db = %f" % (dw, db)
+        # compute the loss
+        l = loss(y, t)
+        print "f(%s) = %f (y: %f, loss: %f)" % (x, t, y, l)
 
-    w += STEP * dw * -1
-    b += STEP * db * -1
+        # derivatives
+        dw = 2 * (y - t) * x
+        db = 2 * (y - t)
 
-# you'll notice that after the full iteration, our algorithm was unable to fully
-# eliminate the loss - although the function is perfectly linear and simple.
-# If we uncomment the debugging line above, we start to understand why: both
-# the weight and bias are being updated by the exact same step size. The only
-# difference is the derivatives. But as you'll notice, the derivatives start
-# out very similar, and only very slowly they're starting to diverge such that
-# the bias (supposed to be 1) is exhibiting smaller changes than the weight
-# (supposed to be 100).
-#
-# This will happen in all cases of gradient descent where there the different
-# parameters are skewed such that they're not on a somewhat similar scale. We
-# wouldn't have had this problem is the target bias or weight were all on a
-# scale of -1 to 1. For example. One fix is to first scale the inputs into a
-# similar scale (Feature Scaling).
+        print "dw %s ; db %s" % (dw, db)
+
+        # debug the derivatives ; read below.
+        # print "dw = %f ; db = %f" % (dw, db)
+
+        w += STEP * dw * -1
+        b += STEP * db * -1
+
 print
 print "W = %s ; b = %s" % (w, b)
