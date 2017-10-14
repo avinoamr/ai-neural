@@ -59,8 +59,6 @@ for i in xrange(EPOCHS):
         dw = 2 * (y - t) * x
         db = 2 * (y - t)
 
-        print "dw %s ; db %s" % (dw, db)
-
         # debug the derivatives ; read below.
         # print "dw = %f ; db = %f" % (dw, db)
 
