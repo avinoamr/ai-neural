@@ -1,17 +1,17 @@
 # implementation of numerical gradient optimization, trying to choose the best
 # inputs (x, y) that will minimize the function f. This is done by starting with
 # two random inputs, and then probing the function to find the slope around
-# these random inputs. In other words, we compute the deltas (dx, dy) which is
-# a number that indicates how the function f changes in response to a tiny
+# these random inputs. In other words, we compute the derivatives (dx, dy) which
+# are numbers that indicates how the function f changes in response to a tiny
 # change in x, y. Then, we walk against that slope in the direction of steepest
 # descent - we add some amount to our initial inputs such that the f function
 # is expected to be lower. Repeat for a 1000 iterations and stop. The final
 # inputs will be the local minima of the function, if one exists.
 #
-# f(x,y) - the function we want to maximize. It can be anything you want!
-# Note however, that if this function doesn't have a minima, it can get
-# inifinitely negative, and thus no minima will be found even after infinite
-# iterations. So, for this demonstration, we'll remove negatives by squaring it.
+# f(x,y) - the function we want to minimize. It can be anything you want! Note
+# however, that if this function doesn't have a minima, it can get inifinitely
+# negative, and thus no minima will be found even after infinite iterations. So,
+# for this demonstration, we'll remove negatives by squaring it.
 def f(x, y):
     return (x - y) ** 2
 
@@ -38,4 +38,4 @@ for i in xrange(ITERATIONS):
 
     # update to the new x, y in the gradient direction
     x += STEP * dx * -1 # -1 because we're after the minima, we want to walk
-    y += STEP * dy * -1 # for slope
+    y += STEP * dy * -1 # downwards against the slope

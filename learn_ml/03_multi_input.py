@@ -1,5 +1,5 @@
-# Our previous code was limited to just functions that accept two values (x, y),
-# we will now generalize it to any function using linear algebra. For this
+# Our previous code was limited to just functions that accept two values (x, y).
+# We will now generalize it to any function using linear algebra. For this
 # experiment we use a vector of size 2 (ie x, y) to keep the entire inp/out
 # logic exactly the same as before, only without hard-coding the parameters
 # themselves. You can change N below to see how it's generalizing to
@@ -9,9 +9,9 @@ import numpy as np
 # constants
 TARGET = 3 # same as before.
 N = 2 # size of the input vector; number of parameters as input
-E = 0.0001 # epsilon; infinitisimal size of probes to find derivatives
-STEP = 0.01 # size of the steps to take in the gradient direction
-ITERATIONS = 1000 # number of probes/step to take - in fact, we only need ~100
+E = 0.0001
+STEP = 0.01
+ITERATIONS = 1000
 
 # same function as before, except that now it accepts a vector of N inputs (X0,
 # X1, ...) instead of a single input. It will be a generalized version of our
@@ -25,7 +25,7 @@ def loss(actual):
 # initial values. instead of hard coding exactly 2 inputs we'll use random N
 # values to have a more generalized code that can adhere to any N-input function
 inp = np.random.rand(N) * 2 - 1 # N-sized vector of random numbers
-for j in xrange(ITERATIONS): # can we stop early once we reach our target?
+for j in xrange(ITERATIONS):
     l = loss(f(inp))
     print "#%d f(%s) = %f" % (j, inp, f(inp))
 
@@ -37,11 +37,11 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     for i in range(N):
         # add an inifinitsimal change to the current index of the input. It's an
         # immutable version of: inp[i] += E
-        e = np.zeros(N)
-        e[i] = E
+        inptemp = np.copy(inp)
+        inptemp[i] += E
 
         # sample the loss function after adding E to inp[i]
-        li = loss(f(inp + e))
+        li = loss(f(inptemp))
 
         # derviative of the input - or how the loss() changes w.r.t inp[i]
         d[i] = (li - l) / E

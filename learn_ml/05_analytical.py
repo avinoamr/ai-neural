@@ -103,9 +103,4 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     # now update the weights and bias, same as before.
     w += STEP * d * -1
 
-    # notice that the update rule for the bias is identical to the one of the
-    # weights, except that the input is fixed at value of 1. We can use that to
-    # remove these extra lines of code if we add one artificial input equal to
-    # 1 and its corresponding weight. Maybe next time :)
-
 print "W = %s" % w

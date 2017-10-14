@@ -1,8 +1,8 @@
-# Now, instead of finding the maxima of the function f, we want to find the
+# Now, instead of finding the minima of the function f, we want to find the
 # inputs (x, y) that would produce a specific target value, say 3. That might
 # seem slightly more involved, because we can't just use the slope to find our
 # value. But it turns out that we can wrap our function f, with another function
-# known as a loss (or error) fucntion that just computes the difference between
+# known as a loss (or error) function that just computes the difference between
 # our actual value and the target value. Then, all we need is to minimize that
 # loss function just like we did before. The result will thus be the inputs that
 # produce the minimal difference between our value, and our target. If that
@@ -18,6 +18,7 @@ ITERATIONS = 1000
 # f(x,y) - the function we want to fix at the TARGET
 # It can be assumed that this function is unknown, and resides as a compiled
 # black-box and may contain arbitrary, complicated and human-supervised logic
+# It also doesn't need to be lower-bounded, because we're not minimizing it
 def f(x, y):
     return x + y
 
@@ -29,7 +30,7 @@ def f(x, y):
 # parabola with a minima at the target. It decends for all values below the
 # target, and ascends for all values above the target.
 #
-# the input to the loss function, is the output of the actual output function f
+# the input to the loss function is the output of the actual output function f
 # which is then compared against the target value to produce the difference (or
 # distance; variance) between the actual and expected value. It's squared so
 # that we'll have a lower-bound (no negatives) and the right gradient before
@@ -53,18 +54,18 @@ y = np.random.rand() * 2 - 1
 # defined mathmatical output function because its results are modelled
 # (supervised) by a human for every given input. We can instead regard that
 # value as a compiled black-boxed function.
-for i in xrange(ITERATIONS): # can we stop early once we reach our target?
+for i in xrange(ITERATIONS):
     l = loss(f(x, y))
     print "#%d f(%f, %f) = %f" % (i, x, y, f(x, y))
 
-    # two samples, inifinitsimal points around x and y
+    # sample around x, y
     lx = loss(f(x + E, y))
     ly = loss(f(x, y + E))
 
-    # derivatives of x and y - or how the output of loss() changes w.r.t x, y
+    # derivatives of x and y
     dx = (lx - l) / E
     dy = (ly - l) / E
 
-    # update to the new x, y in the gradient direction
+    # update to the new x, y
     x += STEP * dx * -1 # looking for the minima, walk against the gradient
     y += STEP * dy * -1 # otherwise, it will find the maxima (infinity)
