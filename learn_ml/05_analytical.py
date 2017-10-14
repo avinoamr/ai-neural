@@ -73,8 +73,7 @@ def f(X):
 def loss(actual, target):
     return (actual - target) ** 2
 
-w = np.random.rand(N) * 2 - 1
-b = np.random.rand() * 2 - 1
+w = np.random.rand(1 + N) * 2 - 1
 for j in xrange(ITERATIONS): # can we stop early once we reach our target?
 
     # just like before - we're assuming that these inputs were given
@@ -82,7 +81,8 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     target = f(inp)
 
     # make our prediction based on our current weights
-    out = sum(inp * w, b)
+    inp = np.insert(inp, 0, 1.)
+    out = sum(inp * w)
 
     # compute the loss
     l = loss(out, target)
@@ -99,15 +99,13 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     # without probes into f, GPUs will be able to significantly further improve
     # the performance of this operation!
     d = 2 * (out - target) * inp # that's it! no probes in f
-    db = 2 * (out - target) # bias not dependent on inp, only on the loss
 
     # now update the weights and bias, same as before.
     w += STEP * d * -1
-    b += STEP * db * -1
 
     # notice that the update rule for the bias is identical to the one of the
     # weights, except that the input is fixed at value of 1. We can use that to
     # remove these extra lines of code if we add one artificial input equal to
     # 1 and its corresponding weight. Maybe next time :)
 
-print "W = %s ; b = %s" % (w, b)
+print "W = %s" % w

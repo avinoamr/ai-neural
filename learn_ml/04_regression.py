@@ -90,15 +90,15 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     for i in range(1 + N):
         # add an inifinitsimal change to the current index of the input. It's an
         # immutable version of: w[i] += E
-        e = np.zeros(1 + N)
-        e[i] = E
+        wtemp = np.copy(w)
+        wtemp[i] += E
 
         # sample the loss function after adding E to w[i]
         # we're making a new prediction, just like before, only now we add the
         # epsilon to the current weight i. Also notice that the target of our
         # loss doesn't change obviously (because the inp is the same), only the
         # predition does
-        li = loss(sum(inp * (w + e)), target)
+        li = loss(sum(inp * wtemp), target)
 
         # derviative of the input - or how the loss() changes w.r.t inp[i]
         d[i] = (li - l) / E

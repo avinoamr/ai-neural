@@ -28,7 +28,7 @@ N = 1 # 1-dimension in the data above.
 #
 # Notice that if we're using just a few epochs (10-20), (a) the loss wouldn't
 # converge to zero just yet, and (b) the bias wouldn't converge to 1.
-EPOCHS = 10
+EPOCHS = 1
 
 # constants. ITERATIONS isn't here anymore because we can't just iterate
 # arbitrarily as we have a finite set of inputs.
@@ -37,8 +37,7 @@ def loss(actual, target):
     return (actual - target) ** 2
 
 
-w = np.random.rand(N) - .5
-b = np.random.rand() - .5
+w = np.random.rand(1 + N) - .5
 data = zip(X, T) # single data set of (x, y) tuples
 
 # instead generating a massive list here, we're just repeating the same one.
@@ -51,7 +50,10 @@ for i in xrange(EPOCHS):
     for x, t in data:
 
         # same as before, we'll compute our prediction
-        y = sum(x * w, b)
+        x = np.insert(x, 0, 1.)
+
+        print x
+        y = sum(x * w)
 
         # compute the loss
         l = loss(y, t)
@@ -59,13 +61,11 @@ for i in xrange(EPOCHS):
 
         # derivatives
         dw = 2 * (y - t) * x
-        db = 2 * (y - t)
 
         # debug the derivatives ; read below.
-        # print "dw = %f ; db = %f" % (dw, db)
+        # print "dw = %f" % dw
 
         w += STEP * dw * -1
-        b += STEP * db * -1
 
 print
-print "W = %s ; b = %s" % (w, b)
+print "W = %s" % w
