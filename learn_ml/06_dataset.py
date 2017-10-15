@@ -51,8 +51,6 @@ for i in xrange(EPOCHS):
 
         # same as before, we'll compute our prediction
         x = np.insert(x, 0, 1.)
-
-        print x
         y = sum(x * w)
 
         # compute the loss
