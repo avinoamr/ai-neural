@@ -28,7 +28,7 @@ N = 1 # 1-dimension in the data above.
 #
 # Notice that if we're using just a few epochs (10-20), (a) the loss wouldn't
 # converge to zero just yet, and (b) the bias wouldn't converge to 1.
-EPOCHS = 1
+EPOCHS = 200
 
 # constants. ITERATIONS isn't here anymore because we can't just iterate
 # arbitrarily as we have a finite set of inputs.
@@ -63,8 +63,9 @@ for i in xrange(EPOCHS):
         dw = 2 * (y - t) * x
 
         # debug the derivatives ; read below.
-        # print "dw = %f" % dw
+        # print "dw = %s" % dw
 
+        # update
         w += STEP * dw * -1
 
 print
