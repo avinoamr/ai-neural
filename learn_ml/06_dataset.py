@@ -28,7 +28,7 @@ N = 1 # 1-dimension in the data above.
 #
 # Notice that if we're using just a few epochs (10-20), (a) the loss wouldn't
 # converge to zero just yet, and (b) the bias wouldn't converge to 1.
-EPOCHS = 200
+EPOCHS = 1000
 
 # constants. ITERATIONS isn't here anymore because we can't just iterate
 # arbitrarily as we have a finite set of inputs.
