@@ -6,7 +6,7 @@ X = [1,   2,   3,   4,   5,   6,   7,   8,   9 ,  10 ]
 T = [101, 201, 301, 401, 501, 601, 701, 801, 901, 1001]
 N = 1
 
-STEP = 0.024
+STEP = 0.01
 def loss(actual, target):
     return (actual - target) ** 2
 
@@ -36,7 +36,7 @@ for i in itertools.count(): # infinite loop
     # stop if the last 5 epochs didn't significantly improve the fit.
     if len(losses) == 5:
         diffs = np.diff(losses)
-        if np.isclose(max(diffs), 0):
+        if np.allclose(diffs, 0):
             break
 
         losses = []
