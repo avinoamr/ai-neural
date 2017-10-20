@@ -6,7 +6,6 @@
 # generate inputs, and will have no access to the function we're trying to model
 # so that we can't experiment with it. All we have is a list of observations:
 import numpy as np
-import random
 
 # There's no f function anymore. We only have 10 observations encoded as a list
 # of inputs (X) and a list of targets (T). For a human it's super easy to pick
@@ -42,11 +41,6 @@ data = zip(X, T) # single data set of (x, y) tuples
 
 # instead generating a massive list here, we're just repeating the same one.
 for i in xrange(EPOCHS):
-
-    # as it turns out - the order of the data matters. We'll shuffle it to make
-    # the convergence a bit faster by trying out differe orders.
-    # https://stats.stackexchange.com/questions/242004/why-do-neural-network-researchers-care-about-epochs
-    random.shuffle(data)
     for x, t in data:
 
         # same as before, we'll compute our prediction
