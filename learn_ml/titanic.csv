@@ -1,4 +1,4 @@
-Fare,Embarked,Age,FamilySize,Pclass,Sex,Survived
+Fare,Embarked,Age,Family,Pclass,Sex,Survived
 cheap,S,young,small,3,male,0
 high,C,adult,small,1,female,1
 low,S,young,alone,3,female,1

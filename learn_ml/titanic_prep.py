@@ -6,7 +6,7 @@ import csv
 r = csv.DictReader(open("titanic_original.csv"))
 data = [d for d in r]
 w = csv.DictWriter(open("titanic.csv", "w"), ["Fare", "Embarked", "Age",
-    "FamilySize", "Pclass", "Sex", "Survived"])
+    "Family", "Pclass", "Sex", "Survived"])
 
 w.writeheader()
 for d in data:
@@ -54,15 +54,15 @@ for d in data:
         d["Fare"] = "high"
 
     # family size
-    famsize = int(d["Parch"]) + int(d["SibSp"])
-    if famsize == 0:
-        d["FamilySize"] = "alone"
-    elif famsize <= 3:
-        d["FamilySize"] = "small"
-    elif famsize <= 6:
-        d["FamilySize"] = "medium"
+    family = int(d["Parch"]) + int(d["SibSp"])
+    if family == 0:
+        d["Family"] = "alone"
+    elif family <= 3:
+        d["Family"] = "small"
+    elif family <= 6:
+        d["Family"] = "medium"
     else:
-        d["FamilySize"] = "big"
+        d["Family"] = "big"
 
     # remove un-used
     del d["Name"]

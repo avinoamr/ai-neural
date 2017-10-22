@@ -38,7 +38,7 @@ for i in xrange(4000):
         x[idx] = 1.
 
         # Family Size
-        idx = { "alone": 12, "small": 13, "medium": 14, "big": 15 }[d["FamilySize"]]
+        idx = { "alone": 12, "small": 13, "medium": 14, "big": 15 }[d["Family"]]
         x[idx] = 1.
 
         # Pclass
