@@ -14,8 +14,10 @@ for i in xrange(4000):
     random.shuffle(data)
     l = 0
 
-    if i % 1000 == 0:
+    if i == 1000:
         STEP /= 2
+    elif i == 2000:
+        STEP = 0.0001
 
     accuracy = 0.0
     for d in data:
@@ -70,7 +72,7 @@ for i in xrange(4000):
     losses.append(l)
     if len(losses) == 5:
         diffs, losses = np.diff(losses), []
-        # print "DIFFS = %s" % diffs
+        print "DIFFS = %s" % diffs
         if np.allclose(diffs, 0):
             break
 
