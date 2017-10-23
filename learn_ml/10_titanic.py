@@ -17,6 +17,17 @@ vocabs = {
     "Sex": { "male": 19, "female": 20 }
 }
 
+# encode the data into N input neurons
+def encode(d):
+    x = np.zeros(N)
+    x[0] = 1. # bias
+
+    for k, v in vocabs.items():
+        idx = v[d[k]]
+        x[idx] = 1.
+
+    return x
+
 losses = []
 w = np.zeros(N)
 for i in xrange(4000):
@@ -30,19 +41,11 @@ for i in xrange(4000):
 
     accuracy = 0.0
     for d in data:
-        # encode the data into N input neurons
-        x = np.zeros(N)
-        x[0] = 1. # bias
+        x = encode(d) # encode the input features into multiple 1-of-key's
+        y = sum(x * w) # compute the prediction
+        t = float(d["Survived"]) # encode the target correct output
 
-        for k, v in vocabs.items():
-            idx = v[d[k]]
-            x[idx] = 1.
-
-        # encode the output
-        t = float(d["Survived"])
-
-        # compute the result
-        y = sum(x * w)
+        # compute the loss
         l += ((y - t) ** 2) / len(data)
 
         # derivatives
