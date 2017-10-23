@@ -6,6 +6,7 @@ STEP = 3.2
 random.seed(1)
 
 data = [d for d in csv.DictReader(open("titanic.csv"))]
+data, validation = data[:595], data[595:]
 N = 21
 
 vocabs = {
@@ -64,10 +65,20 @@ for i in xrange(4000):
     losses.append(l)
     if len(losses) == 5:
         diffs, losses = np.diff(losses), []
-        print "DIFFS = %s" % diffs
+        # print "DIFFS = %s" % diffs
         if np.allclose(diffs, 0):
             break
 
 
-print "ACCURACY %s%% = %s of %s" % (accuracy / len(data) * 100, accuracy, len(data))
-print w
+print "TRAINING %s%% = %s of %s" % (accuracy / len(data) * 100, accuracy, len(data))
+
+accuracy = 0.0
+for d in validation:
+    x = encode(d) # encode the input features into multiple 1-of-key's
+    y = sum(x * w) # compute the prediction
+    t = float(d["Survived"]) # encode the target correct output
+    if y > 0.5 and t == 1:
+        accuracy += 1
+    elif y <= 0.5 and t == 0:
+        accuracy += 1
+print "VALIDATION %s%% = %s of %s" % (accuracy / len(validation) * 100, accuracy, len(validation))
