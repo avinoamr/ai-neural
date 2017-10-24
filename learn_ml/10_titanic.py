@@ -29,16 +29,10 @@ def encode(d):
 
     return x
 
-losses = []
 w = np.zeros(N)
-for i in xrange(4000):
+for i in xrange(3000):
     random.shuffle(data)
     l = 0
-
-    if i == 1000:
-        STEP /= 2
-    elif i == 2000:
-        STEP = 0.0001
 
     accuracy = 0.0
     for d in data:
@@ -61,13 +55,6 @@ for i in xrange(4000):
 
     if i % 100 == 0:
         print "%s: LOSS = %s; CORRECT = %s" % (i, l, accuracy)
-
-    losses.append(l)
-    if len(losses) == 5:
-        diffs, losses = np.diff(losses), []
-        # print "DIFFS = %s" % diffs
-        if np.allclose(diffs, 0):
-            break
 
 
 print "TRAINING %s%% = %s of %s" % (accuracy / len(data) * 100, accuracy, len(data))
