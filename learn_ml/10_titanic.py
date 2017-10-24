@@ -3,7 +3,7 @@ import random
 import numpy as np
 
 STEP = 0.1
-EPOCHS = 3000
+EPOCHS = 2000
 
 random.seed(1)
 data = [d for d in csv.DictReader(open("titanic.csv"))]
@@ -36,15 +36,21 @@ for i in xrange(EPOCHS):
     l = 0
 
     accuracy = 0.0
-    for d in data:
-        x = encode(d) # encode the input features into multiple 1-of-key's
-        y = sum(x * w) # compute the prediction
-        t = float(d["Survived"]) # encode the target correct output
-        accuracy += 1 if round(y) == t else 0
+    remaining = data
+    while len(remaining) > 0:
+        minib, remaining = remaining[:200], remaining[200:]
+        dw = 0
+        for d in minib:
+            x = encode(d) # encode the input features into multiple 1-of-key's
+            y = sum(x * w) # compute the prediction
+            t = float(d["Survived"]) # encode the target correct output
+            accuracy += 1 if round(y) == t else 0
 
-        l += ((y - t) ** 2) / len(data) # compute the loss
-        dw = (2 * (y - t) * x) / len(data) # derivatives of the loss
-        w += STEP * dw * -1 # update
+            l += ((y - t) ** 2) / len(data) # compute the loss
+            dw += (2 * (y - t) * x) / len(minib) # derivatives of the loss
+
+        # mini-batch update
+        w += STEP * dw * -1
 
     if i % 100 == 0:
         print "%s: LOSS = %s; CORRECT = %s" % (i, l, accuracy)
