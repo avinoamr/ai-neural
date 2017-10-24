@@ -27,7 +27,7 @@ N = 1 # 1-dimension in the data above.
 #
 # Notice that if we're using just a few epochs (10-20), (a) the loss wouldn't
 # converge to zero just yet, and (b) the bias wouldn't converge to 1.
-EPOCHS = 1000
+EPOCHS = 300
 
 # constants. ITERATIONS isn't here anymore because we can't just iterate
 # arbitrarily as we have a finite set of inputs.
@@ -41,6 +41,7 @@ data = zip(X, T) # single data set of (x, y) tuples
 
 # instead generating a massive list here, we're just repeating the same one.
 for i in xrange(EPOCHS):
+    l = 0 # sum of losses, to be averaged later.
     for x, t in data:
 
         # same as before, we'll compute our prediction
@@ -48,17 +49,19 @@ for i in xrange(EPOCHS):
         y = sum(x * w)
 
         # compute the loss
-        l = loss(y, t)
-        print "f(%s) = %f (y: %f, loss: %f)" % (x, t, y, l)
+        l += loss(y, t)
 
         # derivatives
         dw = 2 * (y - t) * x
 
-        # debug the derivatives ; read below.
-        # print "dw = %s" % dw
-
         # update
         w += STEP * dw * -1
+
+    # instead of printing the loss after every observation (which can be way
+    # too verbose), we'll print out the average loss for the entire data set
+    l /= len(data)
+
+    print "%s LOSS = %f" % (i, l/len(data))
 
 print
 print "W = %s" % w
