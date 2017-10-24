@@ -46,17 +46,12 @@ for i in xrange(EPOCHS):
 
         # derivatives
         dw = (2 * (y - t) * x) / len(data)
-
-        if y > 0.5 and t == 1:
-            accuracy += 1
-        elif y <= 0.5 and t == 0:
-            accuracy += 1
+        accuracy += 1 if round(y) == t else 0
 
     w += STEP * dw * -1
 
     if i % 100 == 0:
         print "%s: LOSS = %s; CORRECT = %s" % (i, l, accuracy)
-
 
 print "TRAINING %s%% = %s of %s" % (accuracy / len(data) * 100, accuracy, len(data))
 
@@ -65,8 +60,6 @@ for d in validation:
     x = encode(d) # encode the input features into multiple 1-of-key's
     y = sum(x * w) # compute the prediction
     t = float(d["Survived"]) # encode the target correct output
-    if y > 0.5 and t == 1:
-        accuracy += 1
-    elif y <= 0.5 and t == 0:
-        accuracy += 1
+    accuracy += 1 if round(y) == t else 0
+
 print "VALIDATION %s%% = %s of %s" % (accuracy / len(validation) * 100, accuracy, len(validation))
