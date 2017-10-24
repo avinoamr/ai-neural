@@ -30,6 +30,7 @@ def encode(d):
 
     return x
 
+# learning
 w = np.zeros(N)
 for i in xrange(EPOCHS):
     random.shuffle(data)
@@ -50,13 +51,14 @@ for i in xrange(EPOCHS):
             dw += (2 * (y - t) * x) / len(minib) # derivatives of the loss
 
         # mini-batch update
-        w += STEP * dw * -1
+        w += STEP * -dw
 
     if i % 100 == 0:
         print "%s: LOSS = %s; CORRECT = %s" % (i, l, accuracy)
 
 print "TRAINING %s%% = %s of %s" % (accuracy / len(data) * 100, accuracy, len(data))
 
+# cross-validation
 accuracy = 0.0
 for d in validation:
     x = encode(d) # encode the input features into multiple 1-of-key's
