@@ -2,9 +2,10 @@ import csv
 import random
 import numpy as np
 
-STEP = 3.2
-random.seed(1)
+STEP = 2
+EPOCHS = 3000
 
+random.seed(1)
 data = [d for d in csv.DictReader(open("titanic.csv"))]
 data, validation = data[:595], data[595:]
 N = 21
@@ -30,7 +31,7 @@ def encode(d):
     return x
 
 w = np.zeros(N)
-for i in xrange(3000):
+for i in xrange(EPOCHS):
     random.shuffle(data)
     l = 0
 
