@@ -31,7 +31,7 @@ def encode(d):
     return x
 
 # learning
-w = np.zeros(N)
+w = np.random.random(N)
 for i in xrange(EPOCHS):
     random.shuffle(data)
     l = 0
