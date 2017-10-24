@@ -2,7 +2,7 @@ import csv
 import random
 import numpy as np
 
-STEP = 2
+STEP = 0.1
 EPOCHS = 3000
 
 random.seed(1)
@@ -40,15 +40,11 @@ for i in xrange(EPOCHS):
         x = encode(d) # encode the input features into multiple 1-of-key's
         y = sum(x * w) # compute the prediction
         t = float(d["Survived"]) # encode the target correct output
-
-        # compute the loss
-        l += ((y - t) ** 2) / len(data)
-
-        # derivatives
-        dw = (2 * (y - t) * x) / len(data)
         accuracy += 1 if round(y) == t else 0
 
-    w += STEP * dw * -1
+        l += ((y - t) ** 2) / len(data) # compute the loss
+        dw = (2 * (y - t) * x) / len(data) # derivatives of the loss
+        w += STEP * dw * -1 # update
 
     if i % 100 == 0:
         print "%s: LOSS = %s; CORRECT = %s" % (i, l, accuracy)
