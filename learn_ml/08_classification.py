@@ -70,7 +70,7 @@ for i in xrange(EPOCHS):
 
             # same prediction and derivatives as before.
             y = sum(x * w)
-            l = (y - t) ** 2 / 2
+            l += (y - t) ** 2 / 2
             dw += (y - t) * x
 
             # did we predict correctly? We need to transform the output number
