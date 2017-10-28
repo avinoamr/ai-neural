@@ -45,10 +45,10 @@ for i in xrange(EPOCHS):
         y = sum(x * w)
 
         # compute the loss
-        l += (y - t) ** 2
+        l += (y - t) ** 2 / 2
 
         # derivatives
-        dw = 2 * (y - t) * x
+        dw = (y - t) * x
 
         # update
         w += STEP * dw * -1

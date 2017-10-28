@@ -43,11 +43,15 @@
 #   loss'(x) w.r.t w[i] = 2(y - t) * x[i]
 #
 # The same result can be achieve more directly via the chain rule, but I wanted
-# the underlying effects to be clearer for future me. Note that in most texts,
+# the underlying effects to be clearer for future me. NOTE that in most texts,
 # the original function is divided by 2 (which keeps it linear, and has no
 # effect on the steepest descent) for convinience while deriving thus resulting
-# in: loss'(x) w.r.t w[i] = (y - t) * x[i] . We're not using this version here.
-# this is also known as the delta rule.
+# in:
+#
+#   loss()  = (y - t)^2 / 2
+#   loss'() = (y - t) * x[i]
+#
+# This is actual version we'll use going forward.
 #
 # The implication is that we only need to compute the derivative of our loss
 # function directly for all parameters in the input, and then multiply
@@ -82,7 +86,7 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     out = sum(inp * w)
 
     # compute the loss
-    l = (out - target) ** 2
+    l = (out - target) ** 2 / 2
     print "#%d f(%s) = %f (loss: %f)" % (j, inp, target, l)
 
     # now is the big change: we compute the derivative of the loss function
@@ -95,7 +99,7 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     # incentive - the fact that it's a simple scalar-vector multiplication,
     # without probes into f, GPUs will be able to significantly further improve
     # the performance of this operation!
-    d = 2 * (out - target) * inp # that's it! no probes in f
+    d = (out - target) * inp # that's it! no probes in f
 
     # now update the weights and bias, same as before.
     w += STEP * d * -1

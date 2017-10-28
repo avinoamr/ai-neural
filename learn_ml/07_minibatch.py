@@ -48,8 +48,8 @@ for i in xrange(EPOCHS):
         for x, t in minib:
             x = np.insert(x, 0, 1.)
             y = sum(x * w)
-            l += (y - t) ** 2  # compute the loss
-            dw += 2 * (y - t) * x  # derivatives
+            l += (y - t) ** 2 / 2  # compute the loss
+            dw += (y - t) * x  # derivatives
 
         # compute the average derivative of the loss w.r.t every weight
         dw /= len(minib)
