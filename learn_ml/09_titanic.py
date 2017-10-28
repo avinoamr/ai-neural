@@ -1,14 +1,32 @@
+# We will now try to apply everything we've learned to a real-life example:
+# predicting the liklihood of passengers aboard the RMS Titanic. This is the
+# introductory competition in Kaggle[1] and provides a simple first step in the
+# world of machine learning.
+#
+# The data provided (titanic.csv) contains almost 900 passenger information -
+# including Sex, Age, ticket class, cabin, etc., as well as an indication
+# if the passenger survived or not. NOTE that the actual data from the
+# competition is a bit messy, as it contains missing fields and a  mixture of
+# scalar, ordinal and categorical values. There's a great deal of preprocessing
+# involved in getting this data ready for analysis, but we'll skip it for now.
+# You can learn more by reading through some of the kernels in the competition.
+# Instead, our data here is pre-cleaned and ready for use.
+#
+# Our goal is to be able to predict, given all of the parameters mentioned,
+# if the passenger survived or not.
+#
+# [1] https://www.kaggle.com/c/titanic
 import csv
 import random
 import numpy as np
 
 STEP = 0.1
-EPOCHS = 2000
+EPOCHS = 300
 
-random.seed(1)
+# read the data from the CSV file
 data = [d for d in csv.DictReader(open("titanic.csv"))]
-data, validation = data[:595], data[595:]
 N = 21
+BATCHSIZE = len(data) / 4
 
 vocabs = {
     "Fare": { "cheap": 1, "low": 2, "medium": 3, "high": 4 },
@@ -36,34 +54,26 @@ for i in xrange(EPOCHS):
     random.shuffle(data)
     l = 0
 
-    accuracy = 0.0
+    accuracy = 0
     remaining = data
     while len(remaining) > 0:
-        minib, remaining = remaining[:200], remaining[200:]
+        minib, remaining = remaining[:BATCHSIZE], remaining[BATCHSIZE:]
         dw = 0
         for d in minib:
             x = encode(d) # encode the input features into multiple 1-of-key's
             y = sum(x * w) # compute the prediction
             t = float(d["Survived"]) # encode the target correct output
-            accuracy += 1 if round(y) == t else 0
 
-            l += ((y - t) ** 2) / len(data) # compute the loss
-            dw += (2 * (y - t) * x) / len(minib) # derivatives of the loss
+            l += (y - t) ** 2 / 2
+            dw += (y - t) * x
 
-        # mini-batch update
-        w += STEP * -dw
+            accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
 
-    if i % 100 == 0:
-        print "%s: LOSS = %s; CORRECT = %s" % (i, l, accuracy)
+        dw /= len(minib)
+        w += STEP * -dw # mini-batch update
 
-print "TRAINING %s%% = %s of %s" % (accuracy / len(data) * 100, accuracy, len(data))
+    l /= len(data)
+    print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
-# cross-validation
-accuracy = 0.0
-for d in validation:
-    x = encode(d) # encode the input features into multiple 1-of-key's
-    y = sum(x * w) # compute the prediction
-    t = float(d["Survived"]) # encode the target correct output
-    accuracy += 1 if round(y) == t else 0
-
-print "VALIDATION %s%% = %s of %s" % (accuracy / len(validation) * 100, accuracy, len(validation))
+print
+print "W = %s" % w
