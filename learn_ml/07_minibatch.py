@@ -32,9 +32,6 @@ STEP = 0.01
 # correction.
 BATCHSIZE = len(X) / 2 # = 1 <- try this for non-batch for comparison
 
-def loss(actual, target):
-    return (actual - target) ** 2
-
 w = np.random.rand(1 + N) - .5
 data = zip(X, T)
 for i in xrange(EPOCHS):
@@ -51,7 +48,7 @@ for i in xrange(EPOCHS):
         for x, t in minib:
             x = np.insert(x, 0, 1.)
             y = sum(x * w)
-            l += loss(y, t)  # compute the loss
+            l += (y - t) ** 2  # compute the loss
             dw += 2 * (y - t) * x  # derivatives
 
         # compute the average derivative of the loss w.r.t every weight

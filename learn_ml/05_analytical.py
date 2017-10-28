@@ -70,9 +70,6 @@ ITERATIONS = 1000
 def f(X):
     return 10 + 8 * X[0] - 2 * X[1] + X[2] / 2
 
-def loss(actual, target):
-    return (actual - target) ** 2
-
 w = np.random.rand(1 + N) * 2 - 1
 for j in xrange(ITERATIONS): # can we stop early once we reach our target?
 
@@ -85,7 +82,7 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     out = sum(inp * w)
 
     # compute the loss
-    l = loss(out, target)
+    l = (out - target) ** 2
     print "#%d f(%s) = %f (loss: %f)" % (j, inp, target, l)
 
     # now is the big change: we compute the derivative of the loss function

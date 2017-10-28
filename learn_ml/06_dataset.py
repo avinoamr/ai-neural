@@ -32,10 +32,6 @@ N = 1 # 1-dimension in the data above.
 EPOCHS = 300
 STEP = 0.01
 
-def loss(actual, target):
-    return (actual - target) ** 2
-
-
 w = np.random.rand(1 + N) - .5
 data = zip(X, T) # single data set of (x, y) tuples
 
@@ -49,7 +45,7 @@ for i in xrange(EPOCHS):
         y = sum(x * w)
 
         # compute the loss
-        l += loss(y, t)
+        l += (y - t) ** 2
 
         # derivatives
         dw = 2 * (y - t) * x
