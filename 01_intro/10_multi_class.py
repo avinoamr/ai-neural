@@ -1,10 +1,9 @@
 # Classification is aguably the hallmark of supervised machine learning. But
 # usually our real-life examples will involve classifing into multiple classes,
-# and not just a single one, like Survived. We might also want to classify if
-# each passenger was Injured as well. Another example is wanting to predict the
-# next character in a text (out of the full alphabet), or the digit represented
-# by an image (out of the 10 digits). In other words - we don't want a single
-# output, but several mutually exclusive outputs.
+# and not just a single one. One example is wanting to predict the next
+# character in a text (out of the full alphabet), or the digit represented by an
+# image (out of the 10 digits). In other words - we don't want a single output,
+# but several mutually exclusive outputs.
 import csv
 import random
 import numpy as np
@@ -83,3 +82,18 @@ for j in xrange(M):
     idx = X.index(c0)
 
     print "%s = %s %d" % (c0, c1, T[idx] == c1)
+
+
+X = "scjfyaub"
+result = ""
+for c0 in X:
+    x = one_of_k(c0)
+    x = np.insert(x, 0, 1.) # bias
+
+    y = np.zeros(M)
+    for i in xrange(M):
+        y[i] = sum(x * w[i])
+
+    result += ALPHABET[np.argmax(y)]
+
+print result
