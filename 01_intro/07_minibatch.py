@@ -32,7 +32,7 @@ STEP = 0.01
 # correction.
 BATCHSIZE = len(X) / 2 # = 1 <- try this for non-batch for comparison
 
-w = np.random.rand(1 + N) - .5
+w = np.zeros(1 + N)
 data = zip(X, T)
 for i in xrange(EPOCHS):
     l = 0

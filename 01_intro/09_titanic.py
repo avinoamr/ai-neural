@@ -24,7 +24,7 @@ STEP = 0.1
 EPOCHS = 300
 
 # read the data from the CSV file
-data = [d for d in csv.DictReader(open("titanic.csv"))]
+data = [d for d in csv.DictReader(open("09_titanic.csv"))]
 N = 21
 BATCHSIZE = len(data) / 4
 
@@ -48,8 +48,7 @@ def encode(d):
 
     return x
 
-# learning
-w = np.random.random(N)
+w = np.zeros(N)
 for i in xrange(EPOCHS):
     random.shuffle(data)
     l = 0

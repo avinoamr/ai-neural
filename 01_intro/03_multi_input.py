@@ -22,9 +22,9 @@ def f(X):
 def loss(actual):
     return (actual - TARGET) ** 2
 
-# initial values. instead of hard coding exactly 2 inputs we'll use random N
-# values to have a more generalized code that can adhere to any N-input function
-inp = np.random.rand(N) * 2 - 1 # N-sized vector of random numbers
+# initial values. instead of hard coding exactly 2 inputs we'll use N values to
+# have a more generalized code that can adhere to any N-input function
+inp = np.zeros(N) # N-sized vector of random numbers
 for j in xrange(ITERATIONS):
     l = loss(f(inp))
     print "#%d f(%s) = %f" % (j, inp, f(inp))

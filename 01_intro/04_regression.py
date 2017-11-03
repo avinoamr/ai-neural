@@ -57,7 +57,7 @@ def loss(actual, target):
 # and immutable we learn the weights by which to multiply this input. In fact,
 # these weights can represent any linear function, so all that's left to do is
 # find these weights and we have our function approximation!
-w = np.random.rand(1 + N) * 2 - 1 # 1-extra weight for the bias at index 0
+w = np.zeros(1 + N) # 1-extra weight for the bias at index 0
 for j in xrange(ITERATIONS): # can we stop early once we reach our target?
 
     # first we need a new input for each iteration. In reality, we should

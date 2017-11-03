@@ -32,7 +32,7 @@ N = 1 # 1-dimension in the data above.
 EPOCHS = 300
 STEP = 0.01
 
-w = np.random.rand(1 + N) - .5
+w = np.zeros(1 + N)
 data = zip(X, T) # single data set of (x, y) tuples
 
 # instead generating a massive list here, we're just repeating the same one.

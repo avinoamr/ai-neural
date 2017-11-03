@@ -48,7 +48,7 @@ def one_of_k(v):
     x[idx] = 1.
     return x
 
-w = np.random.rand(N) - .5
+w = np.zeros(N)
 data = zip(X, T)
 for i in xrange(EPOCHS):
     l = 0

@@ -38,9 +38,9 @@ def f(x, y):
 def loss(actual):
     return (actual - TARGET) ** 2
 
-# initial values - random [-.5 ... +.5]
-x = np.random.rand() * 2 - 1
-y = np.random.rand() * 2 - 1
+# initial values, start at zero
+x = 0
+y = 0
 
 # we're starting with computing the loss of our function. The actual value of f
 # is of no interest for us, only its loss is. When the loss = 0 (minima), we

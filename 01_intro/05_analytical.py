@@ -74,7 +74,7 @@ ITERATIONS = 1000
 def f(X):
     return 10 + 8 * X[0] - 2 * X[1] + X[2] / 2
 
-w = np.random.rand(1 + N) * 2 - 1
+w = np.zeros(1 + N)
 for j in xrange(ITERATIONS): # can we stop early once we reach our target?
 
     # just like before - we're assuming that these inputs were given
