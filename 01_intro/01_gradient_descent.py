@@ -23,8 +23,8 @@ def main():
     # an output of zero (minima of f)
     gd = GradientDescent(f)
     for i in xrange(150):
-        x, y, out = gd.minimize()
-        print "f(%f, %f) = %f" % (x, y, out)
+        x, y = gd.minimize()
+        print "f(%f, %f) = %f" % (x, y, f(x, y))
 
 # GradientDescent algorithm fixed to functions for arity 2. Given an input
 # function f, this object will gradually find inputs such that the output of the
@@ -65,11 +65,10 @@ class GradientDescent(object):
         dy = (outy - out) / self.E
 
         # update to the new x, y in the negative gradient direction
-        x += self.STEP * dx * -1 # -1 because we're after the minima, we
-        y += self.STEP * dy * -1 # want to walk downwards against the slope
+        self.x += self.STEP * dx * -1 # -1 because we're after the minima, we
+        self.y += self.STEP * dy * -1 # want to walk downwards against the slope
 
-        self.x, self.y = x, y
-        return x, y, f(x, y)
+        return x, y
 
 
 

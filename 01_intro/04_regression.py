@@ -133,7 +133,7 @@ class LinearRegression(object):
         #   inp[i] = STEP * d[i] * - 1 ; for every i in N = all of the inputs
         self.w += self.STEP * d * -1
 
-        return loss(sum(inp * self.w), target)
+        return l
 
 
 

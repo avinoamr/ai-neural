@@ -16,9 +16,9 @@ def main():
     # minimizing it
     f = lambda x, y: x + y
     ld = TargetLossDescent(f, 3) # find inputs x, y such that f(x, y) = 3
-    for i in xrange(1000):
-        x, y, out, loss = ld.minimize()
-        print "#%d f(%f, %f) = %f" % (i, x, y, out)
+    for i in xrange(200):
+        x, y, loss = ld.minimize()
+        print "#%d f(%f, %f) = %f (loss: %f)" % (i, x, y, f(x, y), loss)
 
 # TargetLossDescent is just like GradientDecent, except that it minimized the
 # loss function for a single fixed target value. In other words, it finds the
@@ -90,11 +90,10 @@ class TargetLossDescent(object):
         dy = (ly - l) / self.E
 
         # update to the new x, y
-        x += self.STEP * dx * -1
-        y += self.STEP * dy * -1
+        self.x += self.STEP * dx * -1
+        self.y += self.STEP * dy * -1
 
-        self.x, self.y, out = x, y, f(x, y)
-        return x, y, out, loss(out)
+        return x, y, l
 
 
 if __name__ == "__main__":
