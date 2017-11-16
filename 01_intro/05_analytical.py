@@ -63,45 +63,76 @@
 # generates a lot of code that will make it more difficult to proceed without
 # eliminating some of the overhead.
 import numpy as np
+np.random.seed(1) # static seed to make results reproducible
 
-# constants
-# Notice that E (epsilon) is now removed because we're not probing anymore!
-N = 3
-STEP = 0.01
-ITERATIONS = 1000
+def main():
+    # same as before, weights to be learned are: [1, 2, 3, ...], and bias 10
+    f = lambda x: 10 + 8 * x[0] - 2 * x[1] + x[2] / 2
+    N = 3
 
-# same as before, weights to be learned are: [1, 2, 3, ...], and bias 10
-def f(X):
-    return 10 + 8 * X[0] - 2 * X[1] + X[2] / 2
+    lr = LinearRegression(N)
+    for i in xrange(1000):
+        # just like before - we're assuming that these inputs were given
+        inp = np.random.rand(N) * 2 - 1 # cheat.
+        target = f(inp)
+        loss = lr.minimize(inp, target)
+        print "#%d f(%s) = %f (loss: %f)" % (i, inp, target, loss)
 
-w = np.zeros(1 + N)
-for j in xrange(ITERATIONS): # can we stop early once we reach our target?
+    # print the weights
+    print "W = %s" % lr.w
 
-    # just like before - we're assuming that these inputs were given
-    inp = np.random.rand(N) * 2 - 1 # cheat.
-    target = f(inp)
+# LinearRegression algorithm
+class LinearRegression(object):
+    # hyper-parameters
+    # Notice that E (epsilon) is now removed because we're not probing anymore!
+    STEP = 0.01
 
-    # make our prediction based on our current weights
-    inp = np.insert(inp, 0, 1.)
-    out = sum(inp * w)
+    # parameters
+    w = None # the weights we want to learn for each input
 
-    # compute the loss
-    l = (out - target) ** 2 / 2
-    print "#%d f(%s) = %f (loss: %f)" % (j, inp, target, l)
+    def __init__(self, n):
+        self.n = n
 
-    # now is the big change: we compute the derivative of the loss function
-    # w.r.t each w[i] by multiplying the input, element-wise, with the
-    # derivative of the loss function w.r.t the prediction of weights:
-    #
-    #   loss'(X) w.r.t w[i] = 2(y - t) * x[i]
-    #
-    # See the top comment for the full intuition and math. As an additional
-    # incentive - the fact that it's a simple scalar-vector multiplication,
-    # without probes into f, GPUs will be able to significantly further improve
-    # the performance of this operation!
-    d = (out - target) * inp # that's it! no probes in f
+        # initial weights. before we've learned the input, now that the input is
+        # given and immutable we learn the weights by which to multiply this
+        # input. In fact, these weights can represent any linear function, so
+        # all that's left to do is find these weights and we have our function
+        # approximation!
+        self.w = np.zeros(1 + n) # 1-extra weight for the bias at index 0
 
-    # now update the weights and bias, same as before.
-    w += STEP * d * -1
+    # attempt to minimize the loss function for a given observation of N inputs
+    # and the target result for this input. We don't have access to the function
+    # being fit, so we must only rely on the inp and target
+    def minimize(self, inp, target):
+        w = self.w
 
-print "W = %s" % w
+        # make our prediction based on our current weights
+        inp = np.insert(inp, 0, 1.)
+        out = sum(inp * w)
+
+        # same loss function as before, except that now it can't rely on a
+        # constant target value for all inputs, but instead it receives the
+        # value as input. It's no longer a separate function because we don't
+        # need to re-use this 1-line.
+        l = (out - target) ** 2 / 2
+
+        # now is the big change: we compute the derivative of the loss function
+        # w.r.t each w[i] by multiplying the input, element-wise, with the
+        # derivative of the loss function w.r.t the prediction of weights:
+        #
+        #   loss'(X) w.r.t w[i] = 2(y - t) * x[i]
+        #
+        # See the top comment for the full intuition and math. As an additional
+        # incentive - the fact that it's a simple scalar-vector multiplication,
+        # without probes into f, GPUs will be able to significantly further improve
+        # the performance of this operation!
+        d = (out - target) * inp # that's it! no probes in f
+
+        # now update the weights and bias, same as before.
+        self.w += self.STEP * d * -1
+
+        return l
+
+
+if __name__ == "__main__":
+    main()
