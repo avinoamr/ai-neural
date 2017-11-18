@@ -57,7 +57,7 @@ for i in xrange(EPOCHS):
     # too verbose), we'll print out the average loss for the entire data set
     l /= len(data)
 
-    print "%s LOSS = %f" % (i, l/len(data))
+    print "%s LOSS = %f" % (i, l)
 
 print
 print "W = %s" % w
