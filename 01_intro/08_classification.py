@@ -60,10 +60,8 @@ for i in xrange(EPOCHS):
     accuracy = 0
 
     # mini-batches
-    remaining = data
-    while len(remaining) > 0:
-        minib, remaining = remaining[:BATCHSIZE], remaining[BATCHSIZE:]
-
+    for i in xrange(0, len(data), BATCHSIZE):
+        minib = data[i:i+BATCHSIZE]
         dw = 0
         for v, t in minib:
             x = one_of_k(v)

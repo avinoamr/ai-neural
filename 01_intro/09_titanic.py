@@ -54,9 +54,8 @@ for i in xrange(EPOCHS):
     l = 0
 
     accuracy = 0
-    remaining = data
-    while len(remaining) > 0:
-        minib, remaining = remaining[:BATCHSIZE], remaining[BATCHSIZE:]
+    for i in xrange(0, len(data), BATCHSIZE):
+        minib = data[i:i+BATCHSIZE]
         dw = 0
         for d in minib:
             x = encode(d) # encode the input features into multiple 1-of-key's
