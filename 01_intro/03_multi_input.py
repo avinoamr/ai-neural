@@ -34,7 +34,7 @@ class TargetLossDescentN(object):
         # initial values. instead of hard coding exactly 2 inputs we'll use N
         # values to have a more generalized code that can adhere to any N-input
         # function
-        self.inp = np.zeros(n) # N-sized vector of zero values
+        self.inp = np.zeros(n) # N-sized vector of random numbers
 
     def loss(self, actual):
         return (actual - self.target) ** 2

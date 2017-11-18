@@ -31,7 +31,6 @@
 #   2. Using hidden layers. A concept I will maybe cover later.
 #
 import numpy as np
-np.random.seed(1) # static seed to make results reproducible
 
 def main():
     # slightly different implementation of f() just for fun:
