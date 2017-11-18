@@ -6,67 +6,46 @@
 # 3 (x * y * z), 4 (x * y * z * w), or more...
 import numpy as np
 
-def main():
-    # same function as before, except that now it accepts a vector of N inputs
-    # (X0, X1, ...) instead of a single input. It will be a generalized version
-    # of our previous f(x, y) = x + y function such that f(X) = X0 + X1 + X2...
-    f = sum
-    ld = TargetLossDescentN(f, 3, 2)
-    for i in xrange(200):
-        inp, _ = ld.minimize()
-        print "#%d f(%s) = %f" % (i, inp, f(inp))
+# constants
+TARGET = 3 # same as before.
+N = 2 # size of the input vector; number of parameters as input
+E = 0.0001
+STEP = 0.01
+ITERATIONS = 1000
 
+# same function as before, except that now it accepts a vector of N inputs (X0,
+# X1, ...) instead of a single input. It will be a generalized version of our
+# previous f(x, y) = x + y function such that f(X) = X0 + X1 + X2 + X3...
+def f(X):
+    return sum(X)
 
-class TargetLossDescentN(object):
-    # hyperparams
-    E = 0.0001
-    STEP = 0.01
-    f = None
-    target = 3 # same as before.
-    n = 2 # size of the input vector; number of parameters as input
+def loss(actual):
+    return (actual - TARGET) ** 2
 
-    # params
-    inp = None
+# initial values. instead of hard coding exactly 2 inputs we'll use N values to
+# have a more generalized code that can adhere to any N-input function
+inp = np.zeros(N) # N-sized vector of random numbers
+for j in xrange(ITERATIONS):
+    l = loss(f(inp))
+    print "#%d f(%s) = %f" % (j, inp, f(inp))
 
-    def __init__(self, f, target, n):
-        self.f, self.target, self.n = f, target, n
+    # N samples (instead of 2), inifinitsimal points around the current inp
+    # gradient of the loss function w.r.t the input, element-wise. d is a vector
+    # with N values - corresponding to the derivate of loss function w.r.t every
+    # index in the inp vector.
+    d = np.zeros(N)
+    for i in range(N):
+        # add an inifinitsimal change to the current index of the input. It's an
+        # immutable version of: inp[i] += E
+        inptemp = np.copy(inp)
+        inptemp[i] += E
 
-        # initial values. instead of hard coding exactly 2 inputs we'll use N
-        # values to have a more generalized code that can adhere to any N-input
-        # function
-        self.inp = np.zeros(n) # N-sized vector of random numbers
+        # sample the loss function after adding E to inp[i]
+        li = loss(f(inptemp))
 
-    def loss(self, actual):
-        return (actual - self.target) ** 2
+        # derviative of the input - or how the loss() changes w.r.t inp[i]
+        d[i] = (li - l) / E
 
-    def minimize(self):
-        inp, f, loss = self.inp, self.f, self.loss
-        l = loss(f(inp))
-
-        # N samples (instead of 2), inifinitsimal points around the current inp
-        # gradient of the loss function w.r.t the input, element-wise. d is a
-        # vector with N values - corresponding to the derivate of loss function
-        # w.r.t every index in the inp vector.
-        d = np.zeros(self.n)
-        for i in range(self.n):
-            # add an inifinitsimal change to the current index of the input.
-            # It's an immutable version of: inp[i] += E
-            inptemp = np.copy(inp)
-            inptemp[i] += self.E
-
-            # sample the loss function at a point infinitisimally close to
-            # inp[i]
-            li = loss(f(inptemp))
-
-            # derviative of the input - or how the loss() changes w.r.t inp[i]
-            d[i] = (li - l) / self.E
-
-        # element-wise update to the new inp in the gradient direction. ie:
-        #   inp[i] = STEP * d[i] * - 1 ; for every i in N = all of the inputs
-        self.inp += self.STEP * d * -1
-        return self.inp, loss(f(self.inp))
-
-
-
-if __name__ == "__main__":
-    main()
+    # element-wise update to the new inp in the gradient direction. ie:
+    #   inp[i] = STEP * d[i] * - 1 ; for every i in N = all of the inputs
+    inp += STEP * d * -1
