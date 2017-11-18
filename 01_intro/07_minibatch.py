@@ -58,7 +58,7 @@ for i in xrange(EPOCHS):
         w += STEP * dw * -1
 
     l /= len(data)
-    print "%s LOSS = %f" % (i, l/len(data))
+    print "%s LOSS = %f" % (i, l)
 
 print
 print "W = %s" % w
