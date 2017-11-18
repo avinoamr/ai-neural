@@ -32,108 +32,83 @@
 #
 import numpy as np
 
-def main():
-    # slightly different implementation of f() just for fun:
-    #   f(X) = 10 + 8x1 -2x2 + x3/2
+# no constant TARGET; we need to find it.
+N = 3
+E = 0.0001
+STEP = 0.01
+ITERATIONS = 1000
+
+# slightly different implementation of f() just for fun:
+#   f(X) = 10 + 8x1 -2x2 + x3/2
+#
+# So the learned weights are [8, -2, .5] and the bias 10.
+#
+# Notice that this code will not be able to learn non-linear functions (x^2).
+# But many real-life situations can be reduced to a linear expression.
+def f(X):
+    return 10 + 8 * X[0] - 2 * X[1] + X[2] / 2
+
+# same loss function as before, except that now it can't rely on a constant
+# TARGET value for all inputs, but instead it receives the value as input
+def loss(actual, target):
+    return (actual - target) ** 2
+
+# initial weights. before we've learned the input, now that the input is given
+# and immutable we learn the weights by which to multiply this input. In fact,
+# these weights can represent any linear function, so all that's left to do is
+# find these weights and we have our function approximation!
+w = np.zeros(1 + N) # 1-extra weight for the bias at index 0
+for j in xrange(ITERATIONS): # can we stop early once we reach our target?
+
+    # first we need a new input for each iteration. In reality, we should
+    # receive these inputs from an external training data set. But for now we'll
+    # cheat, by just randomizing an input
+    inp = np.random.rand(N) * 2 - 1 # cheat.
+
+    # the target, or correct value, for this input
+    target = f(inp)
+
+    # we start by making our prediction. Again, because it's assumed to be a
+    # linear function, thus it must be reducible to the form of:
     #
-    # So the learned weights are [8, -2, .5] and the bias 10.
+    #   f(x) = w1x1 + w2x2 + w3x3 + ... + C = ?
     #
-    # Notice that this code will not be able to learn non-linear functions
-    # (x^2). But many real-life situations can be reduced to a linear expression
-    f = lambda x: 10 + 8 * x[0] - 2 * x[1] + x[2] / 2
-    N = 3
-    lr = LinearRegression(3)
-    for i in xrange(1000):
-        # first we need a new input for each iteration. In reality, we should
-        # receive these inputs from an external training data set. But for now
-        # we'll cheat, by just randomizing an input
-        inp = np.random.rand(N) * 2 - 1 # cheat.
+    # thus we need to multiply all inputs with their weights, element wise, and
+    # sum up the result.
+    inp = np.insert(inp, 0, 1.) # inject a fixed input of 1 for the bias weight
+    out = sum(inp * w)
 
-        # the target, or correct value, for this input
-        target = f(inp)
-        loss = lr.minimize(inp, target)
-        print "#%d f(%s) = %f (loss: %f)" % (i, inp, target, loss)
+    # now, lets find our current loss - comparing our prediction to the actual
+    # value produced by f():
+    l = loss(out, target)
+    print "#%d f(%s) = %f (loss: %f)" % (j, inp, target, l)
 
-    # finally - lets print out our weights to see what we did. You should expect
-    # the weights to resemble the ones in f(). Remember that the first weight is
-    # actually the bias
-    print "W = %s" % lr.w
+    # just as before, we now want to make infinitisimal changes to our weights,
+    # in order to find how the loss changes w.r.t to every individual weight.
+    # This is identical to what we did before.
+    d = np.zeros(1 + N) # N derivatives - one per weight
+    for i in range(1 + N):
+        # add an inifinitsimal change to the current index of the input. It's an
+        # immutable version of: w[i] += E
+        wtemp = np.copy(w)
+        wtemp[i] += E
 
+        # sample the loss function after adding E to w[i]
+        # we're making a new prediction, just like before, only now we add the
+        # epsilon to the current weight i. Also notice that the target of our
+        # loss doesn't change obviously (because the inp is the same), only the
+        # predition does
+        li = loss(sum(inp * wtemp), target)
 
+        # derviative of the input - or how the loss() changes w.r.t inp[i]
+        d[i] = (li - l) / E
 
-class LinearRegression(object):
-    # hyper-parameters
-    # no constant TARGET; we need to find it.
-    # no function - we're given inputs and targets directly
-    E = 0.0001
-    STEP = 0.01
+    # now we update the weights, same as before.
+    # element-wise update to the new inp in the gradient direction. ie:
+    #   inp[i] = STEP * d[i] * - 1 ; for every i in N = all of the inputs
+    w += STEP * d * -1
 
-    # parameters
-    w = None # the weights we want to learn for each input
-
-    def __init__(self, n):
-        self.n = n
-
-        # initial weights. before we've learned the input, now that the input is
-        # given and immutable we learn the weights by which to multiply this
-        # input. In fact, these weights can represent any linear function, so
-        # all that's left to do is find these weights and we have our function
-        # approximation!
-        self.w = np.zeros(1 + n) # 1-extra weight for the bias at index 0
-
-    # same loss function as before, except that now it can't rely on a constant
-    # target value for all inputs, but instead it receives the value as input
-    def loss(self, actual, target):
-        return (actual - target) ** 2
-
-    # attempt to minimize the loss function for a given observation of N inputs
-    # and the target result for this input. We don't have access to the function
-    # being fit, so we must only rely on the inp and target
-    def minimize(self, inp, target):
-        w, loss = self.w, self.loss
-
-        # we start by making our prediction. Again, because it's assumed to be a
-        # linear function, thus it must be reducible to the form of:
-        #
-        #   f(x) = w1x1 + w2x2 + w3x3 + ... + C = ?
-        #
-        # thus we need to multiply all inputs with their weights, element wise,
-        # and sum up the result.
-        inp = np.insert(inp, 0, 1.) # inject fixed input 1 for the bias weight
-        out = sum(inp * w)
-
-        # now, lets find our current loss - comparing our prediction to the
-        # actual value produced by f():
-        l = loss(out, target)
-
-        # just as before, we now want to make infinitisimal changes to our
-        # weights, in order to find how the loss changes w.r.t to every
-        # individual weight. This is identical to what we did before.
-        d = np.zeros(w.shape) # one derivative per weight
-        for i in range(len(d)):
-            # add an inifinitsimal change to the current index of the input.
-            # It's an immutable version of: w[i] += E
-            wtemp = np.copy(w)
-            wtemp[i] += self.E
-
-            # sample the loss function after adding E to w[i]
-            # we're making a new prediction, just like before, only now we add
-            # the epsilon to the current weight i. Also notice that the target
-            # of our loss doesn't change obviously (because the inp is the
-            # same), only the predition does
-            li = loss(sum(inp * wtemp), target)
-
-            # derviative of the input - or how the loss() changes w.r.t inp[i]
-            d[i] = (li - l) / self.E
-
-        # now we update the weights, same as before.
-        # element-wise update to the new inp in the gradient direction. ie:
-        #   inp[i] = STEP * d[i] * - 1 ; for every i in N = all of the inputs
-        self.w += self.STEP * d * -1
-
-        return loss(sum(inp * self.w), target)
-
-
-
-if __name__ == "__main__":
-    main()
+# finally - lets print out our weights to see what we did. You should expect the
+# weights to resemble the ones in f(). Remember that the first weight is
+# actually the bias
+print "W = %s" % w
