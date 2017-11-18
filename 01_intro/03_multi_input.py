@@ -64,7 +64,7 @@ class TargetLossDescentN(object):
         # element-wise update to the new inp in the gradient direction. ie:
         #   inp[i] = STEP * d[i] * - 1 ; for every i in N = all of the inputs
         self.inp += self.STEP * d * -1
-        return inp, l
+        return self.inp, loss(f(self.inp))
 
 
 
