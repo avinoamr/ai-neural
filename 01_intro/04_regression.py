@@ -43,8 +43,7 @@ def main():
     # (x^2). But many real-life situations can be reduced to a linear expression
     f = lambda x: 10 + 8 * x[0] - 2 * x[1] + x[2] / 2
     N = 3
-
-    lr = LinearRegression(N)
+    lr = LinearRegression(3)
     for i in xrange(1000):
         # first we need a new input for each iteration. In reality, we should
         # receive these inputs from an external training data set. But for now
