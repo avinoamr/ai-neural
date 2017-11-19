@@ -21,7 +21,7 @@ import random
 import numpy as np
 
 STEP = 0.1
-EPOCHS = 2000
+EPOCHS = 300
 
 # read the data from the CSV file
 data = [d for d in csv.DictReader(open("09_titanic.csv"))]
@@ -54,15 +54,20 @@ for i in xrange(EPOCHS):
     l = 0
 
     accuracy = 0
-    for d in data:
-        x = encode(d) # encode the input features into multiple 1-of-key's
-        y = sum(x * w) # compute the prediction
-        t = float(d["Survived"]) # encode the target correct output
+    for i in xrange(0, len(data), BATCHSIZE):
+        minib = data[i:i+BATCHSIZE]
+        dw = 0
+        for d in minib:
+            x = encode(d) # encode the input features into multiple 1-of-key's
+            y = sum(x * w) # compute the prediction
+            t = float(d["Survived"]) # encode the target correct output
 
-        l += (y - t) ** 2 / 2
-        dw = (y - t) * x
+            l += (y - t) ** 2 / 2
+            dw += (y - t) * x
 
-        accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
+            accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
+
+        dw /= len(minib)
         w += STEP * -dw # mini-batch update
 
     l /= len(data)
