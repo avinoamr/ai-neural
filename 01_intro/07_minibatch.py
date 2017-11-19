@@ -41,8 +41,8 @@ for i in xrange(EPOCHS):
     # Compute the average loss for this entire mini-batch, and then update the
     # weights only once for this entire batch. The result is an update that
     # averages out the influence of the noise.
-    for i in xrange(0, len(data), BATCHSIZE):
-        minib = data[i:i+BATCHSIZE]
+    for j in xrange(0, len(data), BATCHSIZE):
+        minib = data[j:j+BATCHSIZE]
         dw = 0 # sum of the derivatives, to be averaged later
         for x, t in minib:
             x = np.insert(x, 0, 1.)
