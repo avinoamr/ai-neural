@@ -9,12 +9,12 @@ import random
 import numpy as np
 
 STEP = .001
-EPOCHS = 300
+EPOCHS = 100
 
 # Say we want to build a simple program to dechiper code. We're given a few
 # words in the input and their corresponding dechipered text as output.
-X = "croj dsmujlayfxjpygjtdwzbjyeoajcrojvkihjnyq"
-T = "the quick brown fox jumps over the lazy dog"
+X = "croj dsmujlayfxjpygjtdwzbjyeoajcrojvkihjnyq*"
+T = "the quick brown fox jumps over the lazy dog!"
 
 # we'll use one-of-k encoding for each input character. One neuron per character
 # in the alphabet of the provided text
@@ -38,62 +38,75 @@ w = np.zeros((M, N)) # - .5
 
 # given a single character, return all of the alphabet neurons with the right
 # one lit up
-def one_of_k(c):
+def encode(c):
     x = np.zeros(len(ALPHABET))
     idx = ALPHABET.index(c)
     x[idx] = 1. # current character
     return x
 
+# Our y-vector contains M values now. Out of these, we want to pick one value
+# that represents the result best in the alphabet of classes. For now - we'll
+# just pick the y-value that has the highest activation. When then find the
+# index of that value in the y-vector and use that that read the class of out
+# the alphabet.
+def decode(y):
+    # np.argmax(y) gives us the index of the maximum value in the y-vector
+    return ALPHABET[np.argmax(y)]
+
+# perform a prediction, returning the predicted, decoded value. If a target is
+# supplied, it also returns the loss and derivatives. We have now separated the
+# prediction process into its own function for re-usability
+def predict(v, target = None):
+    x = encode(c0)
+    x = np.insert(x, 0, 1.) # bias
+
+    # instead of computing a single result y-value for the input, we now have
+    # M such values - one for every possible output class. We repeat the same
+    # logic as before, only for each y-value along with its weights vector.
+    # NOTE Equivalent one-liner: y = np.dot(w, x)
+    y = np.zeros(M)
+    for j in xrange(M):
+        y[j] = sum(x * w[j])
+
+    res = decode(y) # and decode back into the class
+    if target is None:
+        return res
+
+    # loss and derivatives
+    t = encode(target)
+
+    # Same as before - only now we need to repeat the computation of loss and
+    # derivatives for each y-value.
+    # NOTE Equivalent one-lines:
+    #       l = (y - t) ** 2 / 2 ; dw = ...?
+    #       dw = np.array([d * x for d in y - t])
+    l = np.zeros(M) # M losses.
+    dw = np.zeros((M, N)) # MxN derivatives - one for every weight
+    for j in xrange(len(y)):
+        l[j] = (y[j] - t[j]) ** 2 / 2
+        dw[j] = (y[j] - t[j]) * x
+
+    l = sum(l) / len(l) # average the loss over all of the outputs/targets
+    return res, l, dw
+
+# learn the weights
 for i in xrange(EPOCHS):
     l = 0
+    accuracy = 0
     for c0, c1 in data:
-        x = one_of_k(c0)
-        x = np.insert(x, 0, 1.) # bias
-        t = one_of_k(c1)
+        c2, l0, dw = predict(c0, c1)
+        l += l0
+        w += STEP * -dw
+        accuracy += 1 if c2 == c1 else 0
 
-        y = np.zeros(M)
-        for j in xrange(M):
-            y[j] = sum(x * w[j])
-            l = (y[j] - t[j]) ** 2 / 2
-            dw = (y[j] - t[j]) * x
-            w[j] += STEP * -dw
+    print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
-    if i % 100 == 0:
-        print i
-
-# print zip(ALPHABET, w[0][1:])
-print
-for j in xrange(M):
-    c0 = ALPHABET[j]
-    x = one_of_k(c0)
-    x = np.insert(x, 0, 1.) # bias
-
-    # print "INPUT: %s" % c0
-
-    y = np.zeros(M)
-    for i in xrange(M):
-        y[i] = sum(x * w[i])
-        # print ALPHABET[i], sum(x * w[i])
-
-    # print
-    # print y, np.argmax(y), ALPHABET[np.argmax(y)]
-    c1 = ALPHABET[np.argmax(y)]
-
-    idx = X.index(c0)
-
-    print "%s = %s %d" % (c0, c1, T[idx] == c1)
-
-
-X = "scjfyaub"
+# decipher another message
+X = "scjfyaub*"
 result = ""
 for c0 in X:
-    x = one_of_k(c0)
-    x = np.insert(x, 0, 1.) # bias
+    result += predict(c0)
 
-    y = np.zeros(M)
-    for i in xrange(M):
-        y[i] = sum(x * w[i])
-
-    result += ALPHABET[np.argmax(y)]
-
-print result
+print
+print X + " = " + result
+print
