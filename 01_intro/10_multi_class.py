@@ -21,8 +21,15 @@ T = "the quick brown fox jumps over the lazy dog!"
 data = zip(X, T) # zip the input and output together
 
 ALPHABET = list(set(X + T)) # list of all unique characters
-BATCHSIZE = len(data) / 4
 N = 1 + len(ALPHABET) # one neuron per input character, plus bias
+
+# since we know that the data has no noise, using mini-batches will
+# significantly slow down learning. We're turning it off by using a batch size
+# of 1 which means that the weights will be updated for every single observation
+# in the data, similar to online learning. If our data was based on a real-life
+# text that might have some imperfections - bigger batches would've been able
+# to cancel out that noise.
+BATCHSIZE = 1
 
 # Similarily, our output will also be one-of-k. If we want to map into M
 # categories/classes, we'll need M output neurons, where each is computed
@@ -93,11 +100,19 @@ def predict(v, target = None):
 for i in xrange(EPOCHS):
     l = 0
     accuracy = 0
-    for c0, c1 in data:
-        c2, l0, dw = predict(c0, c1)
-        l += l0
+
+    for i in xrange(0, len(data), BATCHSIZE):
+        minib = data[i:i+BATCHSIZE]
+        dw = 0
+
+        for c0, c1 in minib:
+            c2, l0, dw0 = predict(c0, c1)
+            l += l0
+            dw += dw0
+            accuracy += 1 if c2 == c1 else 0
+
+        dw /= len(minib)
         w += STEP * -dw
-        accuracy += 1 if c2 == c1 else 0
 
     print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
