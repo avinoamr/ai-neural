@@ -64,7 +64,7 @@ def decode(y):
 # supplied, it also returns the loss and derivatives. We have now separated the
 # prediction process into its own function for re-usability
 def predict(v, target = None):
-    x = encode(c0)
+    x = encode(v)
     x = np.insert(x, 0, 1.) # bias
 
     # instead of computing a single result y-value for the input, we now have
@@ -101,8 +101,8 @@ for i in xrange(EPOCHS):
     l = 0
     accuracy = 0
 
-    for i in xrange(0, len(data), BATCHSIZE):
-        minib = data[i:i+BATCHSIZE]
+    for j in xrange(0, len(data), BATCHSIZE):
+        minib = data[j:j+BATCHSIZE]
         dw = 0
 
         for c0, c1 in minib:
