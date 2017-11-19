@@ -21,7 +21,7 @@ import random
 import numpy as np
 
 STEP = 0.1
-EPOCHS = 300
+EPOCHS = 100
 
 # read the data from the CSV file
 data = [d for d in csv.DictReader(open("09_titanic.csv"))]
@@ -59,8 +59,8 @@ for i in xrange(EPOCHS):
     l = 0
 
     accuracy = 0
-    for i in xrange(0, len(data), BATCHSIZE):
-        minib = data[i:i+BATCHSIZE]
+    for j in xrange(0, len(data), BATCHSIZE):
+        minib = data[j:j+BATCHSIZE]
         dw = 0
         for d in minib:
             x = encode(d) # encode the input features into multiple 1-of-key's
