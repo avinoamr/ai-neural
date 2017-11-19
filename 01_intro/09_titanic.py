@@ -26,6 +26,11 @@ EPOCHS = 300
 # read the data from the CSV file
 data = [d for d in csv.DictReader(open("09_titanic.csv"))]
 N = 21
+
+# we have a lot of noise - if you try a batchsize of 1, you'll see that it takes
+# a huge amount of time to converge. Other methods, like adapatable leanring
+# rate can also work around that issue, arguably in a more generic and robust
+# way.
 BATCHSIZE = len(data) / 4
 
 vocabs = {
