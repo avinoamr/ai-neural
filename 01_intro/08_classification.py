@@ -9,7 +9,6 @@ import numpy as np
 
 EPOCHS = 300
 STEP = 0.01
-BATCHSIZE = 8
 
 # Our 1-dimensional input is the sex of the passenger: m (male) or f (female)
 # Our output is a number, either 1 (survived) or 0 (didn't survive)
@@ -59,29 +58,23 @@ for i in xrange(EPOCHS):
     # loss function
     accuracy = 0
 
-    # mini-batches
-    for i in xrange(0, len(data), BATCHSIZE):
-        minib = data[i:i+BATCHSIZE]
-        dw = 0
-        for v, t in minib:
-            x = one_of_k(v)
+    for v, t in data:
+        x = one_of_k(v)
 
-            # same prediction and derivatives as before.
-            y = sum(x * w)
-            l += (y - t) ** 2 / 2
-            dw += (y - t) * x
+        # same prediction and derivatives as before.
+        y = sum(x * w)
+        l += (y - t) ** 2 / 2
+        dw = (y - t) * x
 
-            # did we predict correctly? We need to transform the output number
-            # into a boolean prediction: whether the label should be turned on
-            # or off. For this example, we'll simply see if the prediction is
-            # closer to 0 or 1, by first clipping to the [0, 1] range in order
-            # to trim values outside of this range, and then rounding.
-            accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
-
-        dw /= len(minib)
+        # did we predict correctly? We need to transform the output number into
+        # a boolean prediction: whether the label should be turned on or off.
+        # For this example, we'll simply see if the prediction is closer to 0 or
+        # 1, by first clipping to the [0, 1] range in order to trim values
+        # outside of this range, and then rounding.
+        accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
         w += STEP * -dw # mini-batch update
 
-    l /= len(data)
+    l /= len(data) # average loss
     print "%s LOSS = %f ; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
 print
