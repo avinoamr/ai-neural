@@ -34,29 +34,41 @@ BATCHSIZE = len(X) / 2 # = 1 <- try this for non-batch for comparison
 
 w = np.zeros(1 + N)
 data = zip(X, T)
+
+# batch learn a set of data. Similar code as before, except that now we're only
+# updating the weights once for the average derivatives across the batched data
+# in order to cancel out the noise. This logic is moved to its own function in
+# order to keep the code a bit flatter and more readable. Returns the total sum
+# of all of the losses encountered.
+def learn(w, data):
+    l = 0 # sum of losses, to be averaged later.
+    dw = 0
+    for x, t in data:
+
+        # same as before, we'll compute our prediction
+        x = np.insert(x, 0, 1.)
+        y = sum(x * w)
+
+        # sum the loss & derivatives
+        l += (y - t) ** 2 / 2
+        dw += (y - t) * x
+
+    # update the weights only once for this entire batch. The result is an
+    # update that averages out the influence of the noise.
+    dw /= len(data)
+    w += STEP * dw * -1
+    return l
+
 for i in xrange(EPOCHS):
     l = 0
 
     # Break down the data into several mini-batches, each of size BATCHSIZE.
-    # Compute the average loss for this entire mini-batch, and then update the
-    # weights only once for this entire batch. The result is an update that
-    # averages out the influence of the noise.
+    # Each batch is handdled as if it was the entire input, except that we
+    # update the weights once for the average derivatives.
     for j in xrange(0, len(data), BATCHSIZE):
-        minib = data[j:j+BATCHSIZE]
-        dw = 0 # sum of the derivatives, to be averaged later
-        for x, t in minib:
-            x = np.insert(x, 0, 1.)
-            y = sum(x * w)
-            l += (y - t) ** 2 / 2  # compute the loss
-            dw += (y - t) * x  # derivatives
+        l += learn(w, data[j:j+BATCHSIZE])
 
-        # compute the average derivative of the loss w.r.t every weight
-        dw /= len(minib)
-
-        # update once for that average
-        w += STEP * dw * -1
-
-    l /= len(data)
+    l /= len(data) # average the loss
     print "%s LOSS = %f" % (i, l)
 
 print
