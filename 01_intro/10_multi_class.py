@@ -85,7 +85,7 @@ def predict(v, target = None):
     # Same as before - only now we need to repeat the computation of loss and
     # derivatives for each y-value.
     # NOTE Equivalent one-lines:
-    #       l = (y - t) ** 2 / 2 ; dw = ...?
+    #       l = (y - t) ** 2 / 2
     #       dw = np.array([d * x for d in y - t])
     l = 0 # M losses.
     dw = np.zeros((M, N)) # MxN derivatives - one for every weight
