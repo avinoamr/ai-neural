@@ -68,8 +68,7 @@ for i in xrange(EPOCHS):
     for j in xrange(0, len(data), BATCHSIZE):
         l += learn(w, data[j:j+BATCHSIZE])
 
-    l /= len(data) # average the loss
-    print "%s LOSS = %f" % (i, l)
+    print "%s LOSS = %f" % (i, l) # total loss
 
 print
 print "W = %s" % w

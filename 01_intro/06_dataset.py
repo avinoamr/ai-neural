@@ -37,7 +37,7 @@ data = zip(X, T) # single data set of (x, y) tuples
 
 # instead generating a massive list here, we're just repeating the same one.
 for i in xrange(EPOCHS):
-    l = 0 # sum of losses, to be averaged later.
+    l = 0 # total loss in the network
     for x, t in data:
 
         # same as before, we'll compute our prediction
@@ -54,9 +54,7 @@ for i in xrange(EPOCHS):
         w += STEP * dw * -1
 
     # instead of printing the loss after every observation (which can be way
-    # too verbose), we'll print out the average loss for the entire data set
-    l /= len(data)
-
+    # too verbose), we'll print out the total loss for the network
     print "%s LOSS = %f" % (i, l)
 
 print

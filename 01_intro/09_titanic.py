@@ -75,7 +75,6 @@ for i in xrange(EPOCHS):
         dw /= len(minib)
         w += STEP * -dw # mini-batch update
 
-    l /= len(data)
     print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
 print

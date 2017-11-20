@@ -87,13 +87,12 @@ def predict(v, target = None):
     # NOTE Equivalent one-lines:
     #       l = (y - t) ** 2 / 2 ; dw = ...?
     #       dw = np.array([d * x for d in y - t])
-    l = np.zeros(M) # M losses.
+    l = 0 # M losses.
     dw = np.zeros((M, N)) # MxN derivatives - one for every weight
     for j in xrange(len(y)):
-        l[j] = (y[j] - t[j]) ** 2 / 2
+        l += (y[j] - t[j]) ** 2 / 2
         dw[j] = (y[j] - t[j]) * x
 
-    l = sum(l) / len(l) # average the loss over all of the outputs/targets
     return res, l, dw
 
 # learn the weights
