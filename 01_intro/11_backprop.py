@@ -24,46 +24,89 @@ Wxh =       np.array([[.15, .20, .35], [.25, .30, .35]])
 Why =       np.array([[.40, .45, .60], [.50, .55, .60]])
 
 # single instance inputs/targets from example:
-x   = [.05, .10, 1.]
-t   = [.01, .99]
+x   = np.array([.05, .10])
+t   = np.array([.01, .99])
 
-# FORWARD PASS
-# ------------
-#
-# the forward pass is the same as before. We want to compute the total net input
-# to the hidden layer. We have two hidden neurons, h1 and h2:
-net_h1 = sum(Wxh[0] * x) # = 0.3775
-net_h2 = sum(Wxh[1] * x)
+# FORWARD_PASSS
 
-# run it through the sigmoid activation function
-out_h1 = 1 / (1 + np.exp(-net_h1)) # = 0.593269992
-out_h2 = 1 / (1 + np.exp(-net_h2)) # = 0.596884378
+class Layer(object):
+    W = None # the weights
+    _last_out = None
+    _last_inp = None
 
-# compact into an array of all hidden outputs and add the new bias:
-h = np.array([out_h1, out_h2, 1.])
+    def __init__(self, w):
+        self.W = w
 
-# repeat for the output neurons, this time the input is the output from the
-# hidden layer h:
-net_o1 = sum(Why[0] * h) # = 1.105905967
-net_o2 = sum(Why[1] * h)
+    # the forward pass is the same as before.
+    def forward(self, x):
+        self._last_inp = x
 
-out_o1 = 1 / (1 + np.exp(-net_o1)) # = 0.75136507
-out_o2 = 1 / (1 + np.exp(-net_o2)) # = 0.772928465
+        x = np.append(x, 1.) # add the fixed input for bias
+        net = np.dot(self.W, x) # derivate: x
+        y = 1 / (1 + np.exp(-net)) # sigmoid activation; derivate: y(1 -y)
 
-# that's it!
-o = np.array([out_o1, out_o2])
+        self._last_out = y
+        return y
+
+    def backward(self, dE_dy):
+        x, y = self._last_inp, self._last_out
+
+        # compute the derivatives - differentiate the reverse of the forward
+        # pass. So for every mathematical operation in the forward pass, we need
+        # the respective derivative in this backward pass. This is exactly like
+        # what we've done before.
+        dy_dnet = y * (1 - y) # = (0.1868156, 0.17551005)
+        dnet_dw = x # = (0.59326999, 0.59688438)
+        dE_dnet = dE_dy * dy_dnet
+        dE_dw = np.array([np.append(d * dnet_dw, 0.) for d in dE_dnet])
+
+        # before we update the weights, we'll compute our return value. That
+        # return value will become the input to the previous layer - or how the
+        # total error changes w.r.t changes to the output of that previous
+        # layer. Since the previous layer is the input to this current layer,
+        # this is equivalent to the derivative w.r.t our input - so when we
+        # change the input - how does the total error changes?
+        # dy_dnet = y * (1 - y)
+        dnet1_dx1 = self.W[0][0] # = 0.4
+        dnet1_dx2 = self.W[0][1]
+        dnet2_dx1 = self.W[1][0]
+        dnet2_dx2 = self.W[1][1]
+
+        dE1_dx1 = dE_dnet[0] * dnet1_dx1
+        dE2_dx1 = dE_dnet[1] * dnet2_dx1
+        dE_dx1 = dE1_dx1 + dE2_dx1
+
+        dE1_dx2 = dE_dnet[0] * dnet1_dx2
+        dE2_dx2 = dE_dnet[1] * dnet2_dx2
+        dE_dx2 = dE1_dx2 + dE2_dx2
+
+        ret = np.array([dE_dx1, dE_dx2])
+
+        # update
+        self.W -= ALPHA * dE_dw # = (0.358916480, 0.408666186, 0.6)
+                                #   (0.511301270, 0.561370121, 0.6)
+
+        return ret
 
 
-# TOTAL ERROR
-# -----------
-Eo1 = (t[0] - o[0]) ** 2 / 2 # = 0.274811083
-Eo2 = (t[1] - o[1]) ** 2 / 2 # = 0.023560026
-Etotal = Eo1 + Eo2 # = 0.298371109
+l1 = Layer(Wxh)
+l2 = Layer(Why)
 
+# forward pass
+h = l1.forward(x) # = (0.593269992, 0.596884378)
+o = l2.forward(h) # = (0.751365070, 0.772928465)
 
-# BACKWARD PASS - Output Layer
-# ----------------------------
-#
+# find the derivative of the error function w.r.t to each output neuron.
+# Basically we're measuring how the final output affects the final error per
+# neuron.
+E = (o - t) ** 2 / 2 # = (0.274811083, 0.023560026)
+Etotal = sum(E) # = 0.298371109
+
+# how does the total error change w.r.t every output neruon. We don't care at
+# this point how these outputs are generated - only how their final values
+# affect the total error:
+d = -(t - o) # = (0.74136507, -0.21707153)
+
 # Now we want to walk backwards and compute the derivatives of the total error
 # w.r.t every weight in both layers. In other words, we want to know how every
 # weight affects the loss function. There are several ways to go about that. One
@@ -72,60 +115,22 @@ Etotal = Eo1 + Eo2 # = 0.298371109
 # initial numeric gradient descent. The Back Propogation algorithm is much
 # faster - it allows us to learn all of the derivatives using math all at once.
 #
-# We'll start with the output neurons, and their incoming weights (Why). These
-# are exactly the same as before - we know how each weight affects the total
-# error, without caring about how the inputs to this layer were produced (i.e
-# the hidden layer). For example, the derivative of w5 (Why[0][0]) going from
-# h1 to o1:
+# The basic idea here is that each layer can compute its own derivatives
+# indepentendly. Since the layer implemented it's own forward pass, it knows
+# which mathematical operations were used, and can thus derive all of these
+# operations. The only part that's missing is knowing how it's final output
+# affected the final error on all future layers, without having any knowledge
+# about the math or weights used on these layers. This is solved by propagating
+# these output derivatives backwards - starting from the final loss derivative
+# and allowing each layer to finally feed the derivatives of its inputs to the
+# layer below.
 #
-#   dEtotal   dEtotal   dout_o1   dnet_o1
-#   ------- = ------- * ------- * -------
-#   dw5       dout_o1   dnet_o1   dw5
-#
-# This makes sense: (math) it's the chain rule of all of the operations going
-# from w5 all the way to our total error. Or (intuition) when we (a) change w5,
-# it changes the net output of o1 (net_o1), and then (b) that change to net_o1
-# also changes the output of the sigmoid (out_o1), and then (c) that change to
-# out_o1 also changes Etotal. So that tiny change to w5 generated this series of
-# changes - and we need to derive each one and multiply their effects.
-#
-# (a) We will now compute all of the components in this equation, starting with
-# how the total error changes when the output of o1 changes. This is the
-# derivative of the squared difference error function (dEtotal/o1):
-
-#                 dEo1/dout_o1   +  dEo2/dout_o1 (zero - o1 doesn't change Eo2)
-dEtotal_dout_o1 = -(t[0] - o[0]) + 0. # = 0.74136507
-
-# (b) Now for the second component: how does the output o1 changes w.r.t its
-# total net input (h). This is the derivative of the sigmoid activation
-# function, which is: dout_o1/dnet_o1 = o1(1 - o1)
-dout_o1_dnet_o1 = out_o1 * (1 - out_o1) # = 0.186815602
-
-# (c) We're at the last component: how does the total net input to o1 changes
-# w.r.t w5. That's easy, since it's the derivative of the sum of multiples
-# between the input to this layer (h) and the weights. But since we only care
-# about the partial derivative w.r.t to w5, it doesn't affect any of the other
-# inputs to net_o1, except for its input h1:
-dnet_o1_dw5 = out_h1 + 0. + 0. # = 0.593269992
-
-# Finally - going back to the original equation. We want to multiply these
-# effects because every change to one component will multiply the effect of the
-# other component, until we reach the final dEtotal/dw5:
-dEtotal_dw5 = dEtotal_dout_o1 * dout_o1_dnet_o1 * dnet_o1_dw5 # = 0.082167041
-
-# Perfect. Now we want to do the same for every other weight in the output
-# layer. The whole calculation is:
-#
-#   dEtotal/w[i] = -(t[j] - o[j]) * o[j] * (1 - o[j]) * x[i]
-dEtotal_dw6 = -(t[0] - o[0]) * o[0] * (1 - o[0]) * h[1]
-dEtotal_dw7 = -(t[1] - o[1]) * o[1] * (1 - o[1]) * h[0]
-dEtotal_dw8 = -(t[1] - o[1]) * o[1] * (1 - o[1]) * h[1]
-
-# Now that we have the derivative. We can update the weight:
-Why[0][0] -= ALPHA * dEtotal_dw5 # = 0.35891648
-Why[0][1] -= ALPHA * dEtotal_dw6 # = 0.408666186
-Why[1][0] -= ALPHA * dEtotal_dw7 # = 0.511301270
-Why[1][1] -= ALPHA * dEtotal_dw8 # = 0.561370121
+# Expected weights are:
+# l2.W = (0.358916480, 0.408666186, 0.6) , (0.511301270, 0.561370121, 0.6)
+# l1.W = (0.149780716, 0.19956143, 0.35) , (0.249751143, 0.29950229, 0.35)
+d = o - t # start loss derivative at the top layer.
+d = l2.backward(d) # = (0.036350306, 0.041370322)
+_ = l1.backward(d)
 
 # BACKWARD PASS - Hidden Layer
 # ----------------------------
