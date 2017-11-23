@@ -71,7 +71,7 @@ class Layer(object):
         dnet_dx = self.W
 
         # explain?
-        dE_dx = np.array([d * dnet_dx[i] for i, d in enumerate(dE_dnet)])
+        dE_dx = (dE_dnet * dnet_dx.T).T
         dE_dx = sum(dE_dx)
 
         # update
