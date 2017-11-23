@@ -9,8 +9,8 @@
 # https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
 import numpy as np
 
-# learning rate
 ALPHA = 0.5
+EPSILON = 0.01
 
 # We have 2 input neurons (+ bias = 3 total), 2 hidden neurons
 # (+ bias = 3 total) and 2 output neurons. So we need, one weights matrix per
@@ -27,8 +27,11 @@ Why =       np.array([[.40, .45, .60], [.50, .55, .60]])
 x   = np.array([.05, .10])
 t   = np.array([.01, .99])
 
-# FORWARD_PASSS
-
+# a single layer is just a wrapper around a set of weights. As you'll see below,
+# we now need to separate the forward pass (generating the outputs) from the
+# backward pass (generating the derivatives) - because now we want to compute
+# the output before learning the weights. We also need to "remember" the input
+# and output at each phase, so we need to add some more state here.
 class Layer(object):
     W = None # the weights
     _last_out = None
@@ -59,6 +62,7 @@ class Layer(object):
         dnet_dw = x # = (0.59326999, 0.59688438)
         dE_dnet = dE_dy * dy_dnet
         dE_dw = np.array([np.append(d * dnet_dw, 0.) for d in dE_dnet])
+        print dE_dw
 
         # before we update the weights, we'll compute our return value. That
         # return value will become the input to the previous layer - or how the
@@ -88,7 +92,7 @@ class Layer(object):
 
         return ret
 
-
+# build the two layers in the network
 l1 = Layer(Wxh)
 l2 = Layer(Why)
 
@@ -96,16 +100,25 @@ l2 = Layer(Why)
 h = l1.forward(x) # = (0.593269992, 0.596884378)
 o = l2.forward(h) # = (0.751365070, 0.772928465)
 
-# find the derivative of the error function w.r.t to each output neuron.
-# Basically we're measuring how the final output affects the final error per
-# neuron.
+# total loss. Same as before.
 E = (o - t) ** 2 / 2 # = (0.274811083, 0.023560026)
 Etotal = sum(E) # = 0.298371109
 
-# how does the total error change w.r.t every output neruon. We don't care at
-# this point how these outputs are generated - only how their final values
-# affect the total error:
-d = -(t - o) # = (0.74136507, -0.21707153)
+
+# Pertub. We're going to try to change every weight in the system to measure the
+# derivative numerically. This is only use to test our math going forward, not
+# for production.
+Wxh[0][1] += EPSILON
+h_ = l1.forward(x)
+o_ = l2.forward(h_)
+E_1 = (o_ - t) ** 2 / 2
+Ediff = sum(E_1 - E) / EPSILON
+
+# Ediff = (Etotal_1 - Etotal_2) / 2 * EPSILON
+# Ediff = (Etotal_ - Etotal) / EPSILON
+# print Ediff
+print Ediff
+Wxh[0][1] -= EPSILON
 
 # Now we want to walk backwards and compute the derivatives of the total error
 # w.r.t every weight in both layers. In other words, we want to know how every
@@ -128,7 +141,7 @@ d = -(t - o) # = (0.74136507, -0.21707153)
 # Expected weights are:
 # l2.W = (0.358916480, 0.408666186, 0.6) , (0.511301270, 0.561370121, 0.6)
 # l1.W = (0.149780716, 0.19956143, 0.35) , (0.249751143, 0.29950229, 0.35)
-d = o - t # start loss derivative at the top layer.
+d = o - t # start loss derivative at the top layer. Same as before.
 d = l2.backward(d) # = (0.036350306, 0.041370322)
 _ = l1.backward(d)
 
