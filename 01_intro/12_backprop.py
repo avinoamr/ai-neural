@@ -42,8 +42,7 @@ class Layer(object):
         net = np.dot(self.W, x) # derivate: x
         y = 1 / (1 + np.exp(-net)) # sigmoid activation; derivate: y(1 -y)
 
-        self._last_inp = x
-        self._last_out = y
+        self._last_inp, self._last_out = x, y
         return y
 
     # backward pass - compute the derivatives of each weight in this layer and
@@ -69,21 +68,12 @@ class Layer(object):
         # layer. Since the previous layer is the input to this current layer,
         # this is equivalent to the derivative w.r.t our input - so when we
         # change the input - how does the total error changes?
-        # dy_dnet = y * (1 - y)
-        dnet1_dx1 = self.W[0][0]
-        dnet1_dx2 = self.W[0][1]
-        dnet2_dx1 = self.W[1][0]
-        dnet2_dx2 = self.W[1][1]
+        dnet_dx = self.W
 
-        dE1_dx1 = dE_dnet[0] * dnet1_dx1
-        dE2_dx1 = dE_dnet[1] * dnet2_dx1
-        dE_dx1 = dE1_dx1 + dE2_dx1
-
-        dE1_dx2 = dE_dnet[0] * dnet1_dx2
-        dE2_dx2 = dE_dnet[1] * dnet2_dx2
-        dE_dx2 = dE1_dx2 + dE2_dx2
-
-        ret = np.array([dE_dx1, dE_dx2])
+        dE1_dx = dE_dnet[0] * dnet_dx[0]
+        dE2_dx = dE_dnet[1] * dnet_dx[1]
+        dE_dx = dE1_dx + dE2_dx
+        ret = np.delete(dE_dx, -1) # remove the bias derivative
 
         # update
         self.W -= ALPHA * dE_dw
