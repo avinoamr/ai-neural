@@ -56,17 +56,22 @@ class Layer(object):
         # what we've done before.
         dE_dw = np.array([d * x for d in dE_dy])
 
-        # before we update the weights, we'll compute our return value. That
-        # return value will become the input to the previous layer - or how the
-        # total error changes w.r.t changes to the output of that previous
-        # layer. Since the previous layer is the input to this current layer,
-        # this is equivalent to the derivative w.r.t our input - so when we
-        # change the input - how does the total error changes?
-        dnet_dx = self.W
+        # before we update the weights, we'll compute our return value, which
+        # will become the input to the previous layer - or how the total error
+        # changes w.r.t changes to the output of that previous layer. Since the
+        # previous layer is the input to this current layer, this is equivalent
+        # to the derivative w.r.t our input - so when we change the input - how
+        # does the total error changes?
 
-        # explain?
-        dE_dx = (dE_dy * dnet_dx.T).T
-        dE_dx = sum(dE_dx)
+        # We start with the derivative of the output as a function of the input.
+        # So when we change each input, how will the output be affected? Exactly
+        # by the weight amounts of course, because: y = w1x1 + w2x2 + ...
+        # So if we increase x1 by 1, y will increase by exacly w1.
+        dy_dx = self.W # how each input affects each of the outputs. MxN matrix
+
+        # Now all that's left to know is how that output affects the error. We
+        # already know that! It's the input we received to this function.
+        dE_dx = np.dot(dE_dy, dy_dx)
 
         # update
         self.W -= ALPHA * dE_dw
