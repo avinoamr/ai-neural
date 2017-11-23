@@ -62,7 +62,7 @@ class Layer(object):
         dnet_dw = x # = (0.59326999, 0.59688438)
         dE_dnet = dE_dy * dy_dnet
         dE_dw = np.array([np.append(d * dnet_dw, 0.) for d in dE_dnet])
-        print dE_dw
+        print "dE_dw:", dE_dw
 
         # before we update the weights, we'll compute our return value. That
         # return value will become the input to the previous layer - or how the
@@ -108,17 +108,14 @@ Etotal = sum(E) # = 0.298371109
 # Pertub. We're going to try to change every weight in the system to measure the
 # derivative numerically. This is only use to test our math going forward, not
 # for production.
-Wxh[0][1] += EPSILON
-h_ = l1.forward(x)
-o_ = l2.forward(h_)
-E_1 = (o_ - t) ** 2 / 2
-Ediff = sum(E_1 - E) / EPSILON
+def re_run(W, i, j):
+    W[i][j] += EPSILON
+    o_ = l2.forward(l1.forward(x))
+    E_1 = (o_ - t) ** 2 / 2
+    W[i][j] -= EPSILON
+    return sum(E_1 - E) / EPSILON
 
-# Ediff = (Etotal_1 - Etotal_2) / 2 * EPSILON
-# Ediff = (Etotal_ - Etotal) / EPSILON
-# print Ediff
-print Ediff
-Wxh[0][1] -= EPSILON
+print re_run(l2.W, 1, 1)
 
 # Now we want to walk backwards and compute the derivatives of the total error
 # w.r.t every weight in both layers. In other words, we want to know how every
