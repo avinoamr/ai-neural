@@ -15,7 +15,6 @@
 import numpy as np
 
 ALPHA = 0.5
-EPSILON = 0.01
 
 # we're going to use the same fixed input and weights as before:
 X   = np.array([.05, .10])
@@ -39,8 +38,7 @@ class Layer(object):
     # forward pass is the same as before.
     def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
-        net = np.dot(self.W, x) # derivate: x
-        y = 1 / (1 + np.exp(-net)) # sigmoid activation; derivate: y(1 -y)
+        y = np.dot(self.W, x) # derivate: x
 
         self._last_inp, self._last_out = x, y
         return y
@@ -56,11 +54,7 @@ class Layer(object):
         # pass. So for every mathematical operation in the forward pass, we need
         # the respective derivative in this backward pass. This is exactly like
         # what we've done before.
-        dy_dnet = y * (1 - y)
-        dE_dnet = dE_dy * dy_dnet # 2
-        dnet_dw = x # 3
-
-        dE_dw = np.array([d * dnet_dw for d in dE_dnet])
+        dE_dw = np.array([d * x for d in dE_dy])
 
         # before we update the weights, we'll compute our return value. That
         # return value will become the input to the previous layer - or how the
@@ -71,7 +65,7 @@ class Layer(object):
         dnet_dx = self.W
 
         # explain?
-        dE_dx = (dE_dnet * dnet_dx.T).T
+        dE_dx = (dE_dy * dnet_dx.T).T
         dE_dx = sum(dE_dx)
 
         # update
@@ -89,7 +83,7 @@ y = l2.forward(h) # output from first layer is fed as input to the second
 
 # now compute our error, same as before
 e = (y - T) ** 2 /2
-print "LOSS %s" % sum(e) # = 0.298371109
+print "LOSS %s" % sum(e) # = 0.421124
 
 # backward-pass
 #
@@ -116,6 +110,6 @@ _ = l1.backward(d)
 
 # print the updated weights
 print "l1.W ="
-print l1.W # = (0.149780, 0.199561, 0.345614), (0.249751, 0.299502, 0.345022)
+print l1.W # = (0.140640, 0.181281, 0.162808), (0.239475, 0.278951, 0.139499)
 print "l2.W ="
-print l2.W # = (0.358916, 0.408666, 0.530751), (0.511301, 0.561370, 0.619047)
+print l2.W # = (0.226794, 0.269912, 0.141162), (0.497235, 0.547125, 0.592662)

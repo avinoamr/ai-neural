@@ -34,8 +34,7 @@ class Layer(object):
     # forward pass - compute the predicted output for the given input
     def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
-        net = np.dot(self.W, x) # derivate: x
-        y = 1 / (1 + np.exp(-net)) # sigmoid activation; derivate: y(1 -y)
+        y = np.dot(self.W, x) # derivate: x
         return y
 
 # now lets create our two layers with the weights we've created before:
@@ -52,8 +51,8 @@ def predict(x, t):
     return y, e
 
 # predict the output of our single-instance training set:
-_, e = predict(X, T) # = (0.274811083, 0.023560026)
-print "LOSS %s" % sum(e) # = 0.298371109
+_, e = predict(X, T) # = (0.421017, 0.000106)
+print "LOSS %s" % sum(e) # = 0.421124
 
 # Now's the tricky bit - how do we learn the weights? Before, we've used
 # calculus to compute the derivative of the loss function w.r.t each weight. We
@@ -67,7 +66,10 @@ print "LOSS %s" % sum(e) # = 0.298371109
 # For now - we'll use a different approach: pertubations. This is similar to
 # what we did initially with numeric gradient descent. We will try making a tiny
 # change in each weight, and re-compute the total loss produced. The normalized
-# difference in loss will be our approximation of the derivative.
+# difference in loss will be our approximation of the derivative. While this
+# approach is insanely ineffective for any production code, it will still be
+# useful in the future for checking that our back propoagation code was
+# implemented correctly (a process called Gradient Checking)
 Ws = [l1.W, l2.W] # all of the weights in the network
 dWs = [] # derivatives of all weights in both layers.
 for w in Ws: # iterate over all weight matrices in the network
@@ -90,6 +92,6 @@ for W, dW in zip(Ws, dWs):
 
 # print the updated weights
 print "l1.W ="
-print l1.W # = (0.149780, 0.199561, 0.345614), (0.249751, 0.299502, 0.345022)
+print l1.W # = (0.140640, 0.181281, 0.162808), (0.239475, 0.278951, 0.139499)
 print "l2.W ="
-print l2.W # = (0.358916, 0.408666, 0.530751), (0.511301, 0.561370, 0.619047)
+print l2.W # = (0.226794, 0.269912, 0.141162), (0.497235, 0.547125, 0.592662)
