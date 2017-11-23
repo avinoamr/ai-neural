@@ -9,6 +9,7 @@
 import numpy as np
 
 STEP = .5
+EPSILON = 0.0001 # it's back!
 
 # our example data includes only a single 2D instance. We're using fixed values,
 # and only a single epoch in order to avoid all randomness and measure the
@@ -30,7 +31,8 @@ class Layer(object):
     def __init__(self, w):
         self.W = w
 
-    def predict(self, x):
+    # forward pass - compute the predicted output for the given input
+    def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
         net = np.dot(self.W, x) # derivate: x
         y = 1 / (1 + np.exp(-net)) # sigmoid activation; derivate: y(1 -y)
@@ -42,8 +44,8 @@ l2 = Layer(Why)
 
 # predict the output and loss for the given input and target
 def predict(x, t):
-    h = l1.predict(X)
-    y = l2.predict(h) # output from first layer is fed as input to the second layer
+    h = l1.forward(X)
+    y = l2.forward(h) # output from first layer is fed as input to the second
 
     # now compute our error, same as before
     e = (y - t) ** 2 /2
@@ -68,14 +70,17 @@ print "LOSS %s" % sum(e) # = 0.298371109
 # difference in loss will be our approximation of the derivative.
 Ws = [l1.W, l2.W] # all of the weights in the network
 dWs = [] # derivatives of all weights in both layers.
-for w in Ws:
+for w in Ws: # iterate over all weight matrices in the network
     dW = np.zeros(w.shape)
+
+    # for every weight - re-run the entire network after applying a tiny change
+    # to that weight in order to measure how it affects the total loss.
     for i in range(len(w)):
         for j in range(len(w[i])):
-            w[i][j] += 0.0001 # add a tiny epsilon amount to the weight
+            w[i][j] += EPSILON # add a tiny epsilon amount to the weight
             _, e_ = predict(X, T) # re-run our network to predict the new error
-            dW[i][j] = sum(e - e_) / 0.0001
-            w[i][j] -= 0.0001 # revert our change.
+            dW[i][j] = sum(e - e_) / EPSILON
+            w[i][j] -= EPSILON # revert our change.
 
     dWs.append(dW)
 
@@ -83,7 +88,7 @@ for w in Ws:
 for W, dW in zip(Ws, dWs):
     W += STEP * dW
 
-# print the results
+# print the updated weights
 print "l1.W ="
 print l1.W # = (0.149780, 0.199561, 0.345614), (0.249751, 0.299502, 0.345022)
 print "l2.W ="
