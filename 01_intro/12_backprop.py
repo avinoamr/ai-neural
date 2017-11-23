@@ -70,15 +70,14 @@ class Layer(object):
         # change the input - how does the total error changes?
         dnet_dx = self.W
 
-        dE1_dx = dE_dnet[0] * dnet_dx[0]
-        dE2_dx = dE_dnet[1] * dnet_dx[1]
-        dE_dx = dE1_dx + dE2_dx
-        ret = np.delete(dE_dx, -1) # remove the bias derivative
+        # explain?
+        dE_dx = np.array([d * dnet_dx[i] for i, d in enumerate(dE_dnet)])
+        dE_dx = sum(dE_dx)
 
         # update
         self.W -= ALPHA * dE_dw
 
-        return ret
+        return np.delete(dE_dx, -1) # remove the bias derivative
 
 # build the two layers in the network
 l1 = Layer(Wxh)
