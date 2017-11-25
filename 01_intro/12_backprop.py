@@ -29,8 +29,7 @@ class Layer(object):
 
     # we will need to store the information of the last input and output in
     # order to derive analytically.
-    _last_out = None
-    _last_inp = None
+    _last = (None, None) # input, output
 
     def __init__(self, w):
         self.W = w
@@ -40,7 +39,7 @@ class Layer(object):
         x = np.append(x, 1.) # add the fixed input for bias
         y = np.dot(self.W, x) # derivate: x
 
-        self._last_inp, self._last_out = x, y
+        self._last = x, y
         return y
 
     # backward pass - compute the derivatives of each weight in this layer and
@@ -58,7 +57,7 @@ class Layer(object):
     # can chain multiple layers together, even if the implementation of each one
     # is completely different, and still achieve the correct results.
     def backward(self, dy):
-        x, y = self._last_inp, self._last_out
+        x, y = self._last
 
         # compute the derivatives - differentiate the reverse of the forward
         # pass. So for every mathematical operation in the forward pass, we need
