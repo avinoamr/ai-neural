@@ -19,6 +19,7 @@
 import csv
 import random
 import numpy as np
+random.seed(1)
 
 STEP = 0.1
 EPOCHS = 100
