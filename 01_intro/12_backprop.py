@@ -23,7 +23,7 @@ T   = np.array([.01, .99])
 Wxh = np.array([[.15, .20, .35], [.25, .30, .35]])
 Why = np.array([[.40, .45, .60], [.50, .55, .60]])
 
-# Layer represents a single
+# Layer represents a single neural network layer of weights
 class Layer(object):
     W = None
 
