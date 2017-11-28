@@ -34,7 +34,7 @@ T = [ 1,   0,   1,   1,   1,   0,   0,   0,   1,   0,   1,   1,   1,   0 ]
 # neuron can be lit (value of 1) at any given time. If we have multiple
 # categories we can concatenate multiple such one-of-k's as needed as that
 # maintains the fact that each value is assign a separate input and weight.
-N = 1 + len(set(X)) # 1 per unique value, plus 1 for the bias (fixed at 1.)
+N = len(set(X)) # 1 per unique value
 
 # encode an input string into a one-of-k. We want to return a list of numbers,
 # where all are set zeros, but only one is to one. That should be applied to
@@ -42,13 +42,11 @@ N = 1 + len(set(X)) # 1 per unique value, plus 1 for the bias (fixed at 1.)
 # would require a concatenation of such one-of-k's
 def one_of_k(v):
     x = np.zeros(N)
-    x[0] = 1. # fixed bias
-
-    idx = ["m", "f"].index(v) + 1 # offset the bias
+    idx = ["m", "f"].index(v)
     x[idx] = 1.
     return x
 
-w = np.zeros(N)
+w = np.zeros(1 + N) # +1 for the bias.
 data = zip(X, T)
 for i in xrange(EPOCHS):
     l = 0
@@ -60,11 +58,12 @@ for i in xrange(EPOCHS):
     accuracy = 0
 
     # mini-batches
-    for i in xrange(0, len(data), BATCHSIZE):
-        minib = data[i:i+BATCHSIZE]
+    for j in xrange(0, len(data), BATCHSIZE):
+        minib = data[j:j+BATCHSIZE]
         dw = 0
         for v, t in minib:
             x = one_of_k(v)
+            x = np.insert(x, 0, 1.) # add the fixed bias.
 
             # same prediction and derivatives as before.
             y = sum(x * w)
