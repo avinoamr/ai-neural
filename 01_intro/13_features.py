@@ -100,8 +100,8 @@ def encode(d):
 
     return x
 
-l1 = Layer(np.random.random((2, N + 1)))
-l2 = Layer(np.random.random((2, 2 + 1)))
+l1 = Layer(np.random.random((1, N + 1)))
+l2 = Layer(np.random.random((2, 1 + 1)))
 
 # predict the output and loss for the given input and target
 def predict(x, t):
@@ -132,22 +132,22 @@ for i in xrange(EPOCHS):
             y, e = predict(x, t)
             l += e
 
-            Ws = [l1.W, l2.W] # all of the weights in the network
             dWs = [0, 0] # derivatives of all weights in both layers.
-            for j, w in enumerate(Ws): # iterate over all weight matrices in the network
-                dW = dWs[j] = np.zeros(w.shape)
+            # Ws = [l1.W, l2.W] # all of the weights in the network
+            # for j, w in enumerate(Ws): # iterate over all weight matrices in the network
+            #     dW = dWs[j] = np.zeros(w.shape)
+            #
+            #     # for every weight - re-run the entire network after applying a tiny change
+            #     # to that weight in order to measure how it affects the total loss.
+            #     for i in range(len(w)):
+            #         for j in range(len(w[i])):
+            #             w[i][j] += EPSILON # add a tiny epsilon amount to the weight
+            #             _, e_ = predict(x, t) # re-run our network to predict the new error
+            #             dW[i][j] = sum(e_ - e) / EPSILON
+            #             w[i][j] -= EPSILON # revert our change.
 
-                # for every weight - re-run the entire network after applying a tiny change
-                # to that weight in order to measure how it affects the total loss.
-                for i in range(len(w)):
-                    for j in range(len(w[i])):
-                        w[i][j] += EPSILON # add a tiny epsilon amount to the weight
-                        _, e_ = predict(x, t) # re-run our network to predict the new error
-                        dW[i][j] = sum(e_ - e) / EPSILON
-                        w[i][j] -= EPSILON # revert our change.
-
-            # d, dWs[1] = l2.backward(y - t)
-            # _, dWs[0] = l1.backward(d)
+            d, dWs[1] = l2.backward(y - t)
+            _, dWs[0] = l1.backward(d)
 
             dw1 += dWs[0]
             dw2 += dWs[1]
@@ -169,5 +169,5 @@ for i in xrange(EPOCHS):
         l2.W += ALPHA * -dw2 # mini-batch update
 
     print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
-    print "l1.W=", l1.W
+    # print "l1.W=", l1.W
     # print "l2.W=", l2.W
