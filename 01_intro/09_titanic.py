@@ -26,7 +26,7 @@ EPOCHS = 100
 
 # read the data from the CSV file
 data = [d for d in csv.DictReader(open("09_titanic.csv"))]
-N = 21
+N = 20
 
 # we have a lot of noise - if you try a batchsize of 1, you'll see that it takes
 # a huge amount of time to converge. Other methods, like adapatable leanring
@@ -45,14 +45,14 @@ vocabs = {
 
 # encode the data into N input neurons
 def encode(d):
-    x = np.zeros(N - 1)
+    x = np.zeros(N)
     for k, v in vocabs.items():
         idx = v[d[k]]
         x[idx] = 1.
 
     return x
 
-w = np.zeros(N)
+w = np.zeros(1 + N) # +1 for bias
 for i in xrange(EPOCHS):
     random.shuffle(data)
     l = 0
