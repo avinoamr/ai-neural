@@ -35,19 +35,17 @@ N = 21
 BATCHSIZE = len(data) / 4
 
 vocabs = {
-    "Fare": { "cheap": 1, "low": 2, "medium": 3, "high": 4 },
-    "Embarked": { "S": 5, "C": 6, "Q": 7 },
-    "Age": { "kid": 8, "young": 9, "adult": 10, "old": 11 },
-    "Family": { "alone": 12, "small": 13, "medium": 14, "big": 15 },
-    "Pclass": { "1": 16, "2": 17, "3": 18 },
-    "Sex": { "male": 19, "female": 20 }
+    "Fare": { "cheap": 0, "low": 1, "medium": 2, "high": 3 },
+    "Embarked": { "S": 4, "C": 5, "Q": 6 },
+    "Age": { "kid": 7, "young": 8, "adult": 9, "old": 10 },
+    "Family": { "alone": 11, "small": 12, "medium": 13, "big": 14 },
+    "Pclass": { "1": 15, "2": 16, "3": 17 },
+    "Sex": { "male": 18, "female": 19 }
 }
 
 # encode the data into N input neurons
 def encode(d):
-    x = np.zeros(N)
-    x[0] = 1. # bias
-
+    x = np.zeros(N - 1)
     for k, v in vocabs.items():
         idx = v[d[k]]
         x[idx] = 1.
@@ -65,6 +63,7 @@ for i in xrange(EPOCHS):
         dw = 0
         for d in minib:
             x = encode(d) # encode the input features into multiple 1-of-key's
+            x = np.insert(x, 0, 1.) # fixed bias
             y = sum(x * w) # compute the prediction
             t = float(d["Survived"]) # encode the target correct output
 
