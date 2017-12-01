@@ -89,19 +89,35 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     l = (out - target) ** 2 / 2
     print "#%d f(%s) = %f (loss: %f)" % (j, inp, target, l)
 
-    # now is the big change: we compute the derivative of the loss function
-    # w.r.t each w[i] by multiplying the input, element-wise, with the
-    # derivative of the loss function w.r.t the prediction of weights:
+    # now comes the big change: we compute the derivative of the loss function
+    # with respect to the output y. This gives us a sense of how the loss will
+    # change when we change the output, element-wise.
     #
-    #   loss'(X) w.r.t w[i] = 2(y - t) * x[i]
+    # Recall: E = (y - t) ** 2 / 2    => dE/dy = (y - t)
+    dy = out - target
+
+    # but what we're really after is the derivative of the loss function,
+    # with respect to w, in order to know in which direction to update the
+    # weights. This is built of two terms (1) how the loss is affected by the
+    # output - already computed as dy; (2) how the aforementioned output is
+    # affected by the weights. Finally, we'll need to multiply these two terms
+    # to retrieve the combined effect of w on the loss function following the
+    # chain rule.
     #
     # See the top comment for the full intuition and math. As an additional
     # incentive - the fact that it's a simple scalar-vector multiplication,
     # without probes into f, GPUs will be able to significantly further improve
     # the performance of this operation!
-    d = (out - target) * inp # that's it! no probes in f
+    #
+    # NOTE that we can combine these two terms in a single line of code, but
+    # much later on, when we'll look into back-propagation, we'll see why we're
+    # going to need these two terms separated, so that's the convention we'll
+    # stick with.
+    #
+    # Recall: y = w*x   => dy/dw = x
+    dw = dy * inp
 
     # now update the weights and bias, same as before.
-    w += STEP * d * -1
+    w += STEP * dw * -1
 
 print "W = %s" % w
