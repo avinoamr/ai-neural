@@ -56,13 +56,7 @@ EPOCHS = 100
 # character will be a class
 X = "croj dsmujlayfxjpygjtdwzbjyeoajcrojvkihjnyq*"
 T = "the quick brown fox jumps over the lazy dog!"
-
-# we'll use one-of-k encoding for each input character. One neuron per character
-# in the alphabet of the provided text
-data = zip(X, T) # zip the input and output together
-
-ALPHABET = list(set(X + T)) # list of all unique characters
-N = 1 + len(ALPHABET) # one neuron per input character, plus bias
+data = zip(X, T)
 
 # since we know that the data has no noise, using mini-batches will
 # significantly slow down learning. We're turning it off by using a batch size
@@ -71,19 +65,6 @@ N = 1 + len(ALPHABET) # one neuron per input character, plus bias
 # text that might have some imperfections - bigger batches would've been able
 # to cancel out that noise.
 BATCHSIZE = 1
-
-# Similarily, our output will also be one-of-k. If we want to map into M
-# categories/classes, we'll need M output neurons, where each is computed
-# exactly like we did before.
-M = len(ALPHABET) # One neuron per output character in the alphabet
-
-# Each output neuron has a full set of its own weights. This is called a
-# fully-connected network, because every output is connected to all inputs with
-# its own separate set of weights to be learned. So, if before we needed N
-# weights, now we need M * N weights. We'll achieve it by creating an MxN matrix
-# of weights where each vector represents the weights of a single output neuron
-w = np.zeros((M, N)) # - .5
-
 
 class OneHot(object):
     def __init__(self, alphabet):
@@ -154,49 +135,17 @@ for i in xrange(EPOCHS):
     print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
 # decipher another message
-# X = "scjfyaub*"
-# result = ""
-# for c0 in X:
-#     result += predict(c0)
-#
-# print
-# print X + " = " + result
-# print
+X = "scjfyaub*"
+result = ""
+for v in X:
 
+    # copy-paste of the forward pass. TODO: DRY
+    x = inp.encode(v)
+    x = np.insert(x, 0, 1.)
+    z = np.dot(w, x)
+    y = 1. / (1. + np.exp(-z))
+    result += out.decode(y)
 
-# perform a prediction, returning the predicted, decoded value. If a target is
-# supplied, it also returns the loss and derivatives. We have now separated the
-# prediction process into its own function for re-usability
-# def predict(v, target = None):
-#     x = encode(v)
-#     x = np.insert(x, 0, 1.) # bias
-#
-#     # instead of computing a single result y-value for the input, we now have
-#     # M such values - one for every possible output class. We repeat the same
-#     # logic as before, only for each y-value along with its weights vector.
-#     # NOTE Equivalent one-liner: y = np.dot(w, x)
-#     y = np.zeros(M)
-#     for j in xrange(M):
-#         y[j] = sum(x * w[j])
-#
-#     res = decode(y) # and decode back into the class
-#     if target is None:
-#         return res
-#
-#     # loss and derivatives
-#     t = encode(target)
-#
-#     # Same as before - only now we need to repeat the computation of loss and
-#     # derivatives for each y-value.
-#     # NOTE Equivalent one-lines:
-#     #       l = (y - t) ** 2 / 2
-#     #       dy = (y - t) # now it's a vector of Mx1 derivatives
-#     #       dw = np.array([d * x for d in dy])
-#     l = 0 # M losses.
-#     dw = np.zeros((M, N)) # MxN derivatives - one for every weight
-#     for j in xrange(len(y)):
-#         l += (y[j] - t[j]) ** 2 / 2
-#         dy = (y[j] - t[j])
-#         dw[j] = dy * x
-#
-#     return res, l, dw
+print
+print X + " = " + result
+print
