@@ -86,12 +86,14 @@ def predict(v, target = None):
     # derivatives for each y-value.
     # NOTE Equivalent one-lines:
     #       l = (y - t) ** 2 / 2
-    #       dw = np.array([d * x for d in y - t])
+    #       dy = (y - t) # now it's a vector of Mx1 derivatives
+    #       dw = np.array([d * x for d in dy])
     l = 0 # M losses.
     dw = np.zeros((M, N)) # MxN derivatives - one for every weight
     for j in xrange(len(y)):
         l += (y[j] - t[j]) ** 2 / 2
-        dw[j] = (y[j] - t[j]) * x
+        dy = (y[j] - t[j])
+        dw[j] = dy * x
 
     return res, l, dw
 
@@ -113,6 +115,7 @@ for i in xrange(EPOCHS):
         dw /= len(minib)
         w += STEP * -dw
 
+    l /= len(data)
     print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
 # decipher another message
