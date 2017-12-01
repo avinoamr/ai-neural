@@ -93,7 +93,7 @@ for i in xrange(EPOCHS):
             # Same as before - only now we need to repeat the computation of
             # loss and derivatives for each y-value.
             t = out.encode(target) # encode target string to one-hot activation
-            l = (y - t) ** 2 / 2 # vector of M-losses
+            l += (y - t) ** 2 / 2 # vector of M-losses
             dy = y - t # vector of M derivatives w.r.t y, one per output value
 
             # before, out derivatives w.r.t the weights were a single vector of
