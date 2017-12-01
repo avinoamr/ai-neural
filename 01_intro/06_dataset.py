@@ -44,17 +44,17 @@ for i in xrange(EPOCHS):
         x = np.insert(x, 0, 1.)
         y = sum(x * w)
 
-        # compute the loss
+        # compute the loss & derivatives
         l += (y - t) ** 2 / 2
-
-        # derivatives
-        dw = (y - t) * x
+        dy = (y - t)
+        dw = dy * x
 
         # update
         w += STEP * dw * -1
 
     # instead of printing the loss after every observation (which can be way
     # too verbose), we'll print out the total loss for the network
+    l = l / len(data) # average the loss.
     print "%s LOSS = %f" % (i, l)
 
 print
