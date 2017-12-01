@@ -65,10 +65,11 @@ for i in xrange(EPOCHS):
             x = one_of_k(v)
             x = np.insert(x, 0, 1.) # add the fixed bias.
 
-            # same prediction and derivatives as before.
+            # compute the loss & derivatives
             y = sum(x * w)
             l += (y - t) ** 2 / 2
-            dw += (y - t) * x
+            dy = (y - t)
+            dw += dy * x
 
             # did we predict correctly? We need to transform the output number
             # into a boolean prediction: whether the label should be turned on
@@ -80,6 +81,7 @@ for i in xrange(EPOCHS):
         dw /= len(minib)
         w += STEP * -dw # mini-batch update
 
+    l /= len(data)
     print "%s LOSS = %f ; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
 print

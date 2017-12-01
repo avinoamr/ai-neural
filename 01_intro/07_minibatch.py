@@ -49,9 +49,10 @@ def learn(w, data):
         x = np.insert(x, 0, 1.)
         y = sum(x * w)
 
-        # sum the loss & derivatives
+        # compute the loss & derivatives
         l += (y - t) ** 2 / 2
-        dw += (y - t) * x
+        dy = (y - t)
+        dw += dy * x
 
     # update the weights only once for this entire batch. The result is an
     # update that averages out the influence of the noise.
@@ -68,6 +69,7 @@ for i in xrange(EPOCHS):
     for j in xrange(0, len(data), BATCHSIZE):
         l += learn(w, data[j:j+BATCHSIZE])
 
+    l /= len(data) # average loss
     print "%s LOSS = %f" % (i, l) # total loss
 
 print
