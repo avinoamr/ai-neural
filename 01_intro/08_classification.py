@@ -5,6 +5,11 @@
 # example we'll explore now is attempting to predict for every passenger aboard
 # the Titanic, if they survived or not. Clearly, this is not a numeric value,
 # but a boolean one: True (survived) or False (didn't survive)
+#
+# A different way to think about classification is in terms closer to regression
+# where instead of approximating an output value for each input, we're
+# learning a threshold line in the function where values below these threshold
+# doesn't belong to a class, and values above it do.
 import numpy as np
 
 EPOCHS = 300

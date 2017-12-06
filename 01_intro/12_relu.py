@@ -20,7 +20,7 @@
 #       approximate any non-linear function when combined in multiple layers.
 #   2. It has the range of [0...inf] which means that it might be a bit
 #       inefficient when used with the squared difference loss function (it's
-#       more often used with softmax/cross-entropy - discussed later).
+#       more often used with softmax/cross-entropy - possibly discussed later).
 #   3. It generates sparse activations. Because negative y values are clamped at
 #       zero, many of the neurons (the irrelevant ones that do not contribute to
 #       the prediction of a given class) are not going to fire. This makes the
@@ -35,8 +35,12 @@
 #       prevent that (at a cost of sparsity)
 import numpy as np
 
-STEP = .001
-EPOCHS = 1000
+# the step size needs to be more carefully selected because if it pushes the
+# updated weights too much in the negative direction - the relu function will
+# clamp the output and derivative to zero, meaning that from that point on the
+# neurons will die off and will stop updating due to the dying relu problem.
+STEP = .0015
+EPOCHS = 100
 BATCHSIZE = 1
 
 # Say we want to build a simple program to dechiper code. We're given a few
@@ -64,7 +68,7 @@ class OneHot(object):
 # initialize & learn
 inp = OneHot(list(set(X)))
 out = OneHot(list(set(T)))
-w = np.random.random((out.N, 1 + inp.N))
+w = np.random.random((out.N, 1 + inp.N)) * 0.1
 for i in xrange(EPOCHS):
     l = 0
     accuracy = 0

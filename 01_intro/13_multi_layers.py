@@ -6,6 +6,53 @@
 # output of each layer is fed as the input to the next. The real input is fed to
 # the bottom-most layer, and the output of the top-most layer is the final
 # output of our network.
+#
+# In linear regression, we may want to approximate a function like: f(x) = x^2
+# Our current model can't achieve that obviously. (1) One way around it is to
+# pre-process our input to also contain non-linear variations of the input, like
+# x^2, x^3, log(x), exp(x), etc. But it's unlikely we'll cover every possible
+# non-linear function and parameters, and it will take a massive input size. (2)
+# we can use the bias trick to feed in additional mathmatical components, like
+# the exponent 2 - but still unlikely to cover everything.
+# This still holds for classification problems where we may want something
+# that's more like a step-function (if-then clause).
+#
+# It would be easier if we would have a way to learn these different inputs
+# features, instead of hand-coding all of the ones we can think of. That's
+# exactly what we can achieve with stacking multiple layers of a neural network,
+# by the fact that the output of one layer becomes the input to the next.
+# Stacking layers is therefore similar to combining functions. But that's not
+# enough - combining two linear functions will produce a linear function. So
+# we also need to guarantee that each of the internal activation functions we
+# combine is nonlinear - like in the case of sigmoid, tanh or relu.
+#
+# In fact, it was proven that any function can be approximated using some
+# combinations of the aforementioned activation functions, regardless of how
+# weird or complicated it is. See the link below for more intuition, but
+# generally this is how can think about it:
+#
+# (1) say we have a function that generates some curve (or even a step function)
+# along its x-axis. The curve, or height, of the function can be controlled via
+# the learned weights and bias. All of the non-linear activation functions can
+# achieve that.
+#
+# (2) We use different such functions along the x-axis, with a smooth transition
+# between them. Such that a sub-segment of the x-axis (for example 0 <= x < 10)
+# can go through function A, a different sub-segment (10 <= x < 20) through
+# function B, etc.
+#
+# (3) If we choose enough such functions for infinitely small sub-segments, we
+# can control the error-rate of our approximation.
+#
+# See more: http://neuralnetworksanddeeplearning.com/chap4.html
+#
+# So, within a single hidden layer, we want to assign some params for
+# controlling the first function, and then another set for controlling the
+# second function, etc. And in the final layer we have a single set of weights
+# to control the contributions of each such function on the overall result. In
+# linear regression, the last output layer might not have an activation function
+# in order to allow the output to be an unbound combination of the functions
+# in the hidden layers.
 import numpy as np
 
 STEP = .5
