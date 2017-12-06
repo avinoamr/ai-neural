@@ -65,16 +65,6 @@ class OneHot(object):
 
 inp = OneHot(vocabs)
 out = OneHot([("Survived", "0"), ("Survived", "1")])
-
-# encode the data into N input neurons
-def encode(d):
-    x = np.zeros(N)
-    for k, v in vocabs.items():
-        idx = v[d[k]]
-        x[idx] = 1.
-
-    return x
-
 w = np.zeros((2, 1 + N)) # +1 for bias
 for i in xrange(EPOCHS):
     random.shuffle(data)
@@ -97,8 +87,6 @@ for i in xrange(EPOCHS):
             l += (y - t) ** 2 / 2
             dy = y - t
             dw += np.array([dyi * x for dyi in dy]) # Mx(1 + N) derivatives
-
-            # accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
 
         dw /= len(minib)
         w += STEP * -dw # mini-batch update
