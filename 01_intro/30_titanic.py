@@ -27,7 +27,9 @@ EPOCHS = 100
 # read the data from the CSV file and break the data into an input and output
 # sets, each is a list of (k,v) tuples
 data = [d for d in csv.DictReader(open("30_titanic.csv"))]
+X = [d.items() for d in data]
 T = [("Survived", d["Survived"]) for d in data]
+data = zip(X, T)
 
 vocabs = [
     ("Fare", "cheap"), ("Fare", "low"), ("Fare", "medium"), ("Fare", "high"),
@@ -102,10 +104,7 @@ for i in xrange(EPOCHS):
     for j in xrange(0, len(data), BATCHSIZE):
         minib = data[j:j+BATCHSIZE]
         dw = 0
-        for d in minib:
-            v = d.items()
-            target = ("Survived", d["Survived"])
-
+        for v, target in minib:
             x = inp.encode(*v) # encode the input features into multiple 1-of-key's
             x = np.insert(x, 0, 1.) # fixed bias
             y = np.dot(w, x) # compute the prediction
