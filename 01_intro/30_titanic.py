@@ -24,9 +24,20 @@ random.seed(1)
 STEP = 0.1
 EPOCHS = 100
 
-# read the data from the CSV file
-data = [d for d in csv.DictReader(open("09_titanic.csv"))]
+# read the data from the CSV file and break the data into an input and output
+# sets, each is a list of (k,v) tuples
+data = [d for d in csv.DictReader(open("30_titanic.csv"))]
+
 N = 20
+
+vocabs = [
+    ("Fare", "cheap"), ("Fare", "low"), ("Fare", "medium"), ("Fare", "high"),
+    ("Embarked", "S"), ("Embarked", "C"), ("Embarked", "Q"),
+    ("Age", "kid"), ("Age", "young"), ("Age", "adult"), ("Age", "old"),
+    ("Family", "alone"), ("Family", "small"), ("Family", "medium"), ("Family", "big"),
+    ("Pclass", "1"), ("Pclass", "2"), ("Pclass", "3"),
+    ("Sex", "male"), ("Sex", "female")
+]
 
 # we have a lot of noise - if you try a batchsize of 1, you'll see that it takes
 # a huge amount of time to converge. Other methods, like adapatable leanring
@@ -34,14 +45,26 @@ N = 20
 # way.
 BATCHSIZE = len(data) / 4
 
-vocabs = {
-    "Fare": { "cheap": 0, "low": 1, "medium": 2, "high": 3 },
-    "Embarked": { "S": 4, "C": 5, "Q": 6 },
-    "Age": { "kid": 7, "young": 8, "adult": 9, "old": 10 },
-    "Family": { "alone": 11, "small": 12, "medium": 13, "big": 14 },
-    "Pclass": { "1": 15, "2": 16, "3": 17 },
-    "Sex": { "male": 18, "female": 19 }
-}
+class OneHot(object):
+    def __init__(self, alphabet):
+        self.alphabet = alphabet
+        self.N = len(alphabet)
+
+    def encode(self, *vs):
+        x = np.zeros(self.N)
+        for v in vs:
+            try:
+                idx = self.alphabet.index(v)
+                x[idx] = 1.
+            except ValueError:
+                pass
+        return x
+
+    def decode(self, y):
+        return self.alphabet[np.argmax(y)]
+
+inp = OneHot(vocabs)
+out = OneHot([("Survived", "0"), ("Survived", "1")])
 
 # encode the data into N input neurons
 def encode(d):
@@ -52,7 +75,7 @@ def encode(d):
 
     return x
 
-w = np.zeros(1 + N) # +1 for bias
+w = np.zeros((2, 1 + N)) # +1 for bias
 for i in xrange(EPOCHS):
     random.shuffle(data)
     l = 0
@@ -62,15 +85,20 @@ for i in xrange(EPOCHS):
         minib = data[j:j+BATCHSIZE]
         dw = 0
         for d in minib:
-            x = encode(d) # encode the input features into multiple 1-of-key's
+            x = inp.encode(*d.items()) # encode the input features into multiple 1-of-key's
             x = np.insert(x, 0, 1.) # fixed bias
-            y = sum(x * w) # compute the prediction
-            t = float(d["Survived"]) # encode the target correct output
+            y = np.dot(w, x) # compute the prediction
+            res = out.decode(y) # a string, either "S" or "D"
+            target = ("Survived", d["Survived"])
+            accuracy += 1 if res == target else 0 # simple as that!
 
+            # loss and derivatives
+            t = out.encode(*d.items())
             l += (y - t) ** 2 / 2
-            dw += (y - t) * x
+            dy = y - t
+            dw += np.array([dyi * x for dyi in dy]) # Mx(1 + N) derivatives
 
-            accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
+            # accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
 
         dw /= len(minib)
         w += STEP * -dw # mini-batch update
