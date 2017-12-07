@@ -37,7 +37,8 @@ class Layer(object):
     # forward pass is the same as before.
     def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
-        y = np.dot(self.W, x) # derivate: x
+        z = np.dot(self.W, x) # derivate: x
+        y = 1. / (1. + np.exp(-z))
 
         self._last = x, y
         return y
@@ -64,8 +65,11 @@ class Layer(object):
         # the respective derivative in this backward pass. This is exactly like
         # what we've done before except that now we don't need to also compute
         # the derivative of the total loss of each of our output neurons - it's
-        # given as the input to this layer from the next layer.
-        dw = np.array([d * x for d in dy])
+        # given as the input to this layer from the next layer. This is exactly
+        # the same as before, except that we receive dy as input, instead of
+        # computing it here.
+        dz = dy * (y * (1 - y))
+        dw = np.array([d * x for d in dz])
 
         # before we update the weights, we'll compute our return value, which
         # will become the input to the previous layer - or how the total error
@@ -74,7 +78,25 @@ class Layer(object):
         # to the derivative w.r.t our input - so when we change the input - how
         # does the total error changes?
         #
-        # This amount is equal to (a) how does our input affect our output,
+        # This amount is the chained derivatives of the reverse of what we did
+        # in the forward pass. We had three terms in the forward pass for which
+        # we need to find the partial derivatives (in reverse order):
+        #
+        #   (a) y = 1. / (1. + np.exp(-z))
+        #   (b) np.dot(self.W, x)
+        #
+        # Notice that (a) was already computed as dz above. The only difference
+        # is that for (b) we now want to compute the derivative with respect to
+        # the input, instead of the weights.
+        #
+        # Now moving on to (b) - how does z change as a function of of the input
+        # x? Remember that we need the derivative of the input because that will
+        # be the output of the previous layer. So when we change each input, how
+        # will the weighted sum z be affected? Exactly by the weight amounts of
+        # course, because: z = w1x1 + w2x2 + ...
+        # So if we increase x1 by 1, y will increase by exacly w1.
+        dz_dx = self.W # MxN matrix - rows are y, columns are x.
+
         # or dy/dx multiplied by (b) how does our output affects the total error
         # which was given to us as input. We multiply these terms via the chain
         # rule to chain these effects.
@@ -83,8 +105,8 @@ class Layer(object):
         # So when we change each input, how will the output be affected? Exactly
         # by the weight amounts of course, because: y = w1x1 + w2x2 + ...
         # So if we increase x1 by 1, y will increase by exacly w1.
-        dy_dx = self.W # MxN matrix - rows are y, columns are x.
-
+        # dy_dx = self.W
+        #
         # Now all that's left to know is how that output affects the error. We
         # already know that! It's the input we received to this function (dy).
         # All that's left to do is chain these two terms together. NOTE that
@@ -99,7 +121,7 @@ class Layer(object):
             # output i is affected by all inputs, we need to sum up these
             # effects per input to get the derivative of the total loss for each
             # individual input
-            dx += dy[i] * dy_dx[i]
+            dx += dz[i] * dz_dx[i]
 
         # update
         self.W -= ALPHA * dw
