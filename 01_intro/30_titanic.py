@@ -27,18 +27,15 @@ EPOCHS = 100
 # read the data from the CSV file and break the data into an input and output
 # sets, each is a list of (k,v) tuples
 data = [d for d in csv.DictReader(open("30_titanic.csv"))]
+T = [("Survived", d.pop("Survived")) for d in data]
 X = [d.items() for d in data]
-T = [("Survived", d["Survived"]) for d in data]
 data = zip(X, T)
 
-vocabs = [
-    ("Fare", "cheap"), ("Fare", "low"), ("Fare", "medium"), ("Fare", "high"),
-    ("Embarked", "S"), ("Embarked", "C"), ("Embarked", "Q"),
-    ("Age", "kid"), ("Age", "young"), ("Age", "adult"), ("Age", "old"),
-    ("Family", "alone"), ("Family", "small"), ("Family", "medium"), ("Family", "big"),
-    ("Pclass", "1"), ("Pclass", "2"), ("Pclass", "3"),
-    ("Sex", "male"), ("Sex", "female")
-]
+inp_vocab = set()
+for d in X:
+    inp_vocab.update(d)
+
+out_vocab = set(T)
 
 # we have a lot of noise - if you try a batchsize of 1, you'll see that it takes
 # a huge amount of time to converge. Other methods, like adapatable leanring
@@ -91,8 +88,8 @@ class Layer(object):
         # update
         return dw, np.delete(dx, -1) # remove the bias derivative from dx
 
-inp = OneHot(vocabs)
-out = OneHot([("Survived", "0"), ("Survived", "1")])
+inp = OneHot(list(inp_vocab))
+out = OneHot(list(out_vocab))
 # l = Layer(inp.N, out.N)
 
 w = np.zeros((out.N, 1 + inp.N)) # +1 for bias
