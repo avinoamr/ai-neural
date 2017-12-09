@@ -90,7 +90,7 @@ class Layer(object):
 
 inp = OneHot(list(inp_vocab))
 out = OneHot(list(out_vocab))
-# l = Layer(inp.N, out.N)
+l1 = Layer(inp.N, out.N)
 
 w = np.zeros((out.N, 1 + inp.N)) # +1 for bias
 for i in xrange(EPOCHS):
@@ -103,8 +103,10 @@ for i in xrange(EPOCHS):
         dw = 0
         for v, target in minib:
             x = inp.encode(*v) # encode the input features into multiple 1-of-key's
-            x = np.insert(x, 0, 1.) # fixed bias
-            y = np.dot(w, x) # compute the prediction
+            y = l1.forward(x)
+
+            # x = np.insert(x, 0, 1.) # fixed bias
+            # y = np.dot(w, x) # compute the prediction
             res = out.decode(y) # a string, either "S" or "D"
             accuracy += 1 if res == target else 0 # simple as that!
 
@@ -112,12 +114,15 @@ for i in xrange(EPOCHS):
             t = out.encode(target)
             l += (y - t) ** 2 / 2
             dy = y - t
-            dw += np.array([dyi * x for dyi in dy]) # Mx(1 + N) derivatives
+
+            dw_, dx = l1.backward(dy)
+            dw += dw_
+            # dw += np.array([dyi * x for dyi in dy]) # Mx(1 + N) derivatives
 
         dw /= len(minib)
-        w += STEP * -dw # mini-batch update
+        l1.W += STEP * -dw # mini-batch update
 
     print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
 print
-print "W = %s" % w
+print "W = %s" % l1.W
