@@ -110,7 +110,7 @@ class Layer(object):
         # Now all that's left to know is how that output affects the error. We
         # already know that! It's the input we received to this function (dy).
         # All that's left to do is chain these two terms together. NOTE that
-        # this entire loop is can be re-written as: dx = np.dot(dy, dy_dx)
+        # this entire loop is can be re-written as: dx = np.dot(dz, dz_dx)
         dx = np.zeros(len(x)) # our result - derivative of total loss w.r.t x
         for i in xrange(len(y)):
             # this y[i] affects the total loss by dy[i]. We know that. Now we
