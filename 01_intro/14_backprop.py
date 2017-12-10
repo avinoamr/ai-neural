@@ -141,7 +141,7 @@ y = l2.forward(h) # output from first layer is fed as input to the second
 
 # now compute our error, same as before
 e = (y - T) ** 2 /2
-print "LOSS %s" % sum(e) # = 0.421124
+print "LOSS %s" % sum(e) # =  0.298371
 
 # backward-pass
 #
@@ -170,6 +170,6 @@ _ = l1.backward(d)
 # weights from the back-prop algorithm with the results we received before with
 # pertubations. This is known as gradient checking.
 print "l1.W ="
-print l1.W # = (0.140640, 0.181281, 0.162808), (0.239475, 0.278951, 0.139499)
+print l1.W # = (0.149780, 0.199561, 0.345614), (0.249751, 0.299502, 0.345022)
 print "l2.W ="
-print l2.W # = (0.226794, 0.269912, 0.141162), (0.497235, 0.547125, 0.592662)
+print l2.W # = (0.358916, 0.408666, 0.530751), (0.511300, 0.561369, 0.619047)

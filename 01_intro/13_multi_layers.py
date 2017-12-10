@@ -99,8 +99,8 @@ def predict(x, t):
     return y, e
 
 # predict the output of our single-instance training set:
-_, e = predict(X, T) # = (0.421017, 0.000106)
-print "LOSS %s" % sum(e) # = 0.421124
+_, e = predict(X, T)
+print "LOSS %s" % sum(e) # = 0.298371
 
 # Now's the tricky bit - how do we learn the weights? Before, we've used
 # calculus to compute the derivative of the loss function w.r.t each weight. We
