@@ -111,6 +111,8 @@ for i in xrange(EPOCHS):
     e /= len(data)
     print "%s: LOSS = %s" % (i, sum(e))
 
+print
+
 # NOTE that if we remove the hidden layer, we obviously can't reach an error
 # close to zero because the problem was designed such that no set of weights can
 # describe the data perfectly.
@@ -168,3 +170,7 @@ print "l2.W=", l2.W
 # NOTE that this is just one possible way to dissect the data correctly. Since
 # Y|M and Y&M are the opposite that will also work. It all depends on the
 # randomness which is seeded with a constant here for reproducible results.
+#
+# NOTE also that if we use a hidden layer of size 3, following the same exercise
+# we end up with some duplicate features in this case: O&F, O|F, O|F.
+# So 2 hidden neurons suffices here.
