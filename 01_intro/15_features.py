@@ -42,10 +42,10 @@ EPOCHS = 300
 # set of weights that can compute the correct output.
 X = np.array([
     # Young Old     Female Male
-    [ 1.,   0.,     1.,    0.],     # Young Female
-    [ 1.,   0.,     0.,    1.],     # Young Male
-    [ 0.,   1.,     1.,    0.],     # Old Female
-    [ 0.,   1.,     0.,    1.],     # Old Male
+    [ 1.,   0.,     1.,    0. ],     # Young Female
+    [ 1.,   0.,     0.,    1. ],     # Young Male
+    [ 0.,   1.,     1.,    0. ],     # Old Female
+    [ 0.,   1.,     0.,    1. ],     # Old Male
 ])
 
 T = np.array([
@@ -54,8 +54,6 @@ T = np.array([
     [1., 0.],  # Yes
     [0., 1.]   # No
 ])
-
-data = zip(X, T)
 
 # Layer represents a single neural network layer of weights
 class Layer(object):
@@ -93,6 +91,7 @@ class Layer(object):
         return dw, dx
 
 # we'll use a hidden layer of 2 neurons and examine the learned weights
+data = zip(X, T)
 l1 = Layer(4, 2)
 l2 = Layer(2, 2)
 for i in xrange(EPOCHS):
