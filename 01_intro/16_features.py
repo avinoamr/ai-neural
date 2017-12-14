@@ -29,13 +29,12 @@
 #    1  -1  -1  -1        (w1 && !w2 && !w3)
 #    1   1  -2  -2        (w1 && w2 && !w3)
 #   -1   1   1  -2        (!w1 && w2 && w3)
-
 #    0  -1  -1   1        !(w2 || w3)          # NOR
 #   -1  -1  -1   1        !(w1 || w2 || w3)    # NOR
 #    0  -1  -1   2        !(w2 && w3)          # NAND
 #   -1  -1  -1   3        !(w1 && w2 && w3)    # NAND
-#                         !((w1 && w2) || w3)
 #    1  -1  -1   2        !(!w1 && w2 && w3)
+#   -2  -2  -3   3        !((w1 && w2) || w3)
 #
 # So the question is - how many different such expressions (hidden neurons) we
 # need to fully map the data? Obviously, at most there are 2^N different
