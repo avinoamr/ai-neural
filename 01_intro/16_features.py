@@ -5,11 +5,9 @@
 # that bias baseline:  out = [W1, W2, ..., b]
 #
 # Since we're going through the sigmoid activation, the weights needs to
-# overcome the bias by atleast 0.5 in order to fully excite the output. This is
-# a big over-simplification, because we're using the sigmoid activation which
-# would be closer to zero if the summed weights is below 0.5, so that's really
-# the value by which the bias needs to be overcome. Using tanh would produce a
-# more reasonable distribution with the mean at 0 instead of 0.5.
+# overcome the bias by atleast 0.5 in order to fully excite the output. Using
+# tanh would produce a more reasonable distribution with the mean at 0 instead
+# of 0.5.
 #
 # We've seen that a hidden neuron can learn the AND and OR logic gates. This can
 # extended to more complicated expressions. Here are a few (NOTE that here we're
@@ -53,15 +51,29 @@
 # combination of 4 input weights - and as we'll see, it's always possible to
 # reach a loss of zero. That gives us the intuition that any arbitrarily complex
 # classification problem can be solved with hidden layers. The question that I'm
-# still unable to fully answer, is why would we ever need more than 1 layer,
+# still unable to fully answer is why would we ever need more than 1 layer,
 # beyond the need to add different logic (CNN, RNN, dropout, softmax, etc.)
+# NOTE that this code should never be used in reality. It's only here for
+# experimental & educational purposes.
 #
-# NOTE that of course this is horribly inefficient (16 Inputs => 65,536 hidden
-# neurons), non-elegant and non-intelligent as it doesn't really learn
-# complicated logic but simply remembers every possible input. A hash table will
-# probably be more efficient than a neural network like that. NOTE that this
-# code should never be used in reality. It's only here for experimental &
-# educational purposes.
+# That's obviously inefficient (16 Inputs => 65,536 hidden neurons). In fact,
+# most real-life cases will not have nearly as many samples in the training data
+# set - so the upper-bound of the number of combinations is:
+#
+#   Upper-Bound: min(2^N, # of samples)
+#
+# But, beyond being inefficient, it's also non-elegant and non-intelligent as it
+# doesn't really learn complicated logic but simply remembers every possible
+# input. A hash table will probably be more efficient than a neural network like
+# that. A huge side-effect is that in a setup like that, the system is more
+# likely to over-fit by the fact that it will tend to remember all of the
+# training data and wouldn't generalize correctly. This to me seems like another
+# limitation of artificial neural netowkrs, compared to biological ones, because
+# adding the intelligence (number of neurons/synapses) would result in loss of
+# intelligence when confronted with new data. Instead of learning the least
+# amount of patterns to understand the data, our learning procedure will
+# conviniently learn the most possible patterns - losing generalization in the
+# process.
 import numpy as np
 np.random.seed(1)
 
@@ -128,9 +140,10 @@ class Layer(object):
 
 # we'll use a hidden layer of 2^N neurons to cover every possible combination
 # of the input. One neuron per combination of the 4 input neurons.
-data = zip(X, T)
 l1 = Layer(4, 2 ** 4)
 l2 = Layer(2 ** 4, 2)
+
+data = zip(X, T)
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
     e = 0.

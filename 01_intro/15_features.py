@@ -8,21 +8,19 @@
 #
 # In regression, a hidden layer can be thought of as composition of several
 # simple non-linear functions building up into a single arbitrarily complex
-# non-linear function. But in classification, we can think of the output of the
-# hidden layer as a set of new features dataset that's fed into the final layer
-# and thus the whole purpose of the hidden layer is to find the features that
-# are most relevant for decreasing the loss. In other words, it needs to pick
-# the features that are most interesting/relevant for the prediction, using any
-# combination of the input features.
+# non-linear function as shown in (1). But in classification, we can think of
+# the output of the hidden layer as a set of new features dataset that's fed
+# into the final layer and thus the whole purpose of the hidden layer is to find
+# the features that are most relevant for decreasing the loss. In other words,
+# it needs to pick the features that are most interesting/relevant for the
+# prediction, using any combination of the input features.
 #
-# In this example, we'll explore a simplified version of the family-tree example
-# where we're given a list of family relationships (jacob, son-of, abraham) and
-# we need to predict the latter (target of the relationship; abraham). This same
-# example can be extended to any kind of relationship modelling. What will be
-# especially interesting, is reviewing the learned neurons at the hidden layer.
+# In this example we'll intentionally design data that's not linearily separable
+# thus there's no possible set of weights that can perfectly predict the result.
+# This can obviously happen in the real-world, where one feature may produce
+# different results, depending on the activation on a different feature.
 #
-# https://www.coursera.org/learn/neural-networks/lecture/IfaB4/learning-to-predict-the-next-word-13-min
-# http://www.cs.toronto.edu/~hinton/absps/families.pdf
+# (1) http://neuralnetworksanddeeplearning.com/chap4.html
 import numpy as np
 np.random.seed(1)
 
