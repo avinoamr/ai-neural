@@ -100,7 +100,7 @@ for i in xrange(EPOCHS):
     accuracy = 0
     for j in xrange(0, len(data), BATCHSIZE):
         minib = data[j:j+BATCHSIZE]
-        dw = 0
+        dw1 = 0
         for v, target in minib:
             x = inp.encode(*v) # encode the input features into multiple 1-of-key's
             y = l1.forward(x)
@@ -115,12 +115,12 @@ for i in xrange(EPOCHS):
             l += (y - t) ** 2 / 2
             dy = y - t
 
-            dw_, dx = l1.backward(dy)
-            dw += dw_
+            dw1_, dx = l1.backward(dy)
+            dw1 += dw1_
             # dw += np.array([dyi * x for dyi in dy]) # Mx(1 + N) derivatives
 
-        dw /= len(minib)
-        l1.W += STEP * -dw # mini-batch update
+        dw1 /= len(minib)
+        l1.W += STEP * -dw1 # mini-batch update
 
     print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
