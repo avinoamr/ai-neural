@@ -64,16 +64,23 @@
 #
 # But, beyond being inefficient, it's also non-elegant and non-intelligent as it
 # doesn't really learn complicated logic but simply remembers every possible
-# input. A hash table will probably be more efficient than a neural network like
-# that. A huge side-effect is that in a setup like that, the system is more
-# likely to over-fit by the fact that it will tend to remember all of the
-# training data and wouldn't generalize correctly. This to me seems like another
-# limitation of artificial neural netowkrs, compared to biological ones, because
-# adding the intelligence (number of neurons/synapses) would result in loss of
-# intelligence when confronted with new data. Instead of learning the least
-# amount of patterns to understand the data, our learning procedure will
-# conviniently learn the most possible patterns - losing generalization in the
-# process.
+# input.
+#
+# More importantly, in a setup like that, the system is more likely to over-fit
+# by the fact that it will tend to remember all of the training data and wouldn't
+# generalize correctly. This to me seems like another limitation of artificial
+# neural netowkrs, compared to biological ones, because adding the intelligence
+# (number of neurons/synapses) would result in loss of intelligence when
+# confronted with new data. Instead of learning the least amount of patterns to
+# understand the data, our learning procedure will conviniently learn the most
+# possible patterns - losing generalization in the process.
+#
+# By following Ockham's Razor - we're searching for the simplest model as it's
+# most likely the best. The subject of how to achieve this is not explored here
+# at this time, but involves many techniques: like regularization, pruning,
+# growing, global searches, etc. For now, the basic intuition is that we want
+# to find the least amount of hidden neurons that will correlate the data at an
+# acceptable accuracy.
 import numpy as np
 np.random.seed(1)
 
