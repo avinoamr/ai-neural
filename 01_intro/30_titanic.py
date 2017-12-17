@@ -17,12 +17,11 @@
 #
 # [1] https://www.kaggle.com/c/titanic
 import csv
-import random
 import numpy as np
-random.seed(1)
+np.random.seed(1)
 
-STEP = 0.1
-EPOCHS = 100
+STEP = 4
+EPOCHS = 2500
 
 # read the data from the CSV file and break the data into an input and output
 # sets, each is a list of (k,v) tuples
@@ -61,49 +60,60 @@ class OneHot(object):
     def decode(self, y):
         return self.alphabet[np.argmax(y)]
 
+# Layer represents a single neural network layer of weights
 class Layer(object):
     W = None
     _last = (None, None) # input, output
 
     def __init__(self, n, m):
-        self.W = np.zeros((m, 1 + n)) # +1 for bias
+        self.W = np.random.random((m, n + 1)) # +1 bias
 
+    # forward pass is the same as before.
     def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
-        y = np.dot(self.W, x) # derivate: x
+        z = np.dot(self.W, x) # derivate: x
+        y = 1. / (1. + np.exp(-z)) # derivate: y(1 - y)
 
         self._last = x, y
         return y
 
+    # backward pass - compute the derivatives of each weight in this layer and
+    # update them.
     def backward(self, dy):
         x, y = self._last
 
-        # derivatives of the loss with respect to the weights w
-        dw = np.array([d * x for d in dy])
+        # how the weights affect total loss (derivative w.r.t w)
+        dz = dy * (y * (1 - y))
+        dw = np.array([d * x for d in dz])
 
-        # derivatives of the loss with respect to the input x
-        dy_dx = self.W # MxN matrix - rows are y, columns are x.
-        dx = np.dot(dy, dy_dx)
+        # how the input (out of previous layer) affect total loss (derivative
+        # w.r.t x). Derivates of the reverse of the forward pass.
+        dx = np.dot(dz, self.W)
+        dx = np.delete(dx, -1) # remove the bias input derivative
 
         # update
-        return dw, np.delete(dx, -1) # remove the bias derivative from dx
+        # self.W -= ALPHA * dw
+        return dw, dx
 
 inp = OneHot(list(inp_vocab))
 out = OneHot(list(out_vocab))
-l1 = Layer(inp.N, out.N)
+l1 = Layer(inp.N, 20)
+l2 = Layer(20, out.N)
 
 w = np.zeros((out.N, 1 + inp.N)) # +1 for bias
 for i in xrange(EPOCHS):
-    random.shuffle(data)
+    np.random.shuffle(data)
     l = 0
 
     accuracy = 0
     for j in xrange(0, len(data), BATCHSIZE):
         minib = data[j:j+BATCHSIZE]
         dw1 = 0
+        dw2 = 0
         for v, target in minib:
             x = inp.encode(*v) # encode the input features into multiple 1-of-key's
-            y = l1.forward(x)
+            h = l1.forward(x)
+            y = l2.forward(h)
 
             # x = np.insert(x, 0, 1.) # fixed bias
             # y = np.dot(w, x) # compute the prediction
@@ -115,14 +125,23 @@ for i in xrange(EPOCHS):
             l += (y - t) ** 2 / 2
             dy = y - t
 
-            dw1_, dx = l1.backward(dy)
+            dw2_, dh = l2.backward(dy)
+            dw1_, dx = l1.backward(dh)
             dw1 += dw1_
+            dw2 += dw2_
             # dw += np.array([dyi * x for dyi in dy]) # Mx(1 + N) derivatives
 
         dw1 /= len(minib)
+        dw2 /= len(minib)
         l1.W += STEP * -dw1 # mini-batch update
+        l2.W += STEP * -dw2 # mini-batch update
 
-    print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
+    l /= len(data)
+    print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, sum(l), accuracy, len(data))
+
+    if i >= 100 and i % 100 == 0:
+        STEP *= 0.99
+        print "STEP = %f" % STEP
 
 print
 print "W = %s" % l1.W
