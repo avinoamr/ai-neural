@@ -86,6 +86,7 @@ np.random.seed(1)
 
 ALPHA = 3
 EPOCHS = 1000
+H = 2 ** 4 # 2^N different combinations.
 
 X = np.array([
     [ 0., 0., 0., 0. ],
@@ -147,8 +148,8 @@ class Layer(object):
 
 # we'll use a hidden layer of 2^N neurons to cover every possible combination
 # of the input. One neuron per combination of the 4 input neurons.
-l1 = Layer(4, 2 ** 4)
-l2 = Layer(2 ** 4, 2)
+l1 = Layer(4, H)
+l2 = Layer(H, 2)
 
 data = zip(X, T)
 for i in xrange(EPOCHS):

@@ -26,6 +26,7 @@ np.random.seed(1)
 
 ALPHA = 3
 EPOCHS = 300
+H = 2 # number of hidden neurons
 
 # We'll use faux car insurance data, where we wish to predict the likelihood of
 # an insurance holder (by Gener & Age) to file a claim:
@@ -90,8 +91,8 @@ class Layer(object):
 
 # we'll use a hidden layer of 2 neurons and examine the learned weights
 data = zip(X, T)
-l1 = Layer(4, 2)
-l2 = Layer(2, 2)
+l1 = Layer(4, H)
+l2 = Layer(H, 2)
 for i in xrange(EPOCHS):
     e = 0.
     for x, t in data:
