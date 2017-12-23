@@ -19,6 +19,7 @@ EPOCHS = 200
 # zero cannot be obtained, but still the network should learn the correlation.
 X = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [1.]])
 T = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [0.]]) # outlier last!
+#                                                        ^^
 
 # If we run out previous code as is, these outliers will have a significant
 # influence over our learning, because they're given a full STEP in their
@@ -49,6 +50,8 @@ class Layer(object):
     _last = (None, None) # input, output
 
     def __init__(self, n, m):
+        self.N = n
+        self.M = m
         self.W = np.random.random((m, n + 1)) # +1 bias
 
     # forward pass
@@ -61,13 +64,14 @@ class Layer(object):
         bias = np.ones((xs.shape[0], 1)) # can be a constant
         xs = np.concatenate((xs, bias), axis=1)
 
-        ys = []
-        for x in xs:
+        # BATCH x M outputs
+        ys = np.zeros((len(xs), self.M))
+        for i, x in enumerate(xs):
             z = np.dot(self.W, x) # derivate: x
             y = 1. / (1. + np.exp(-z)) # derivate: y(1 - y)
-            ys.append(y)
+            ys[i] = y
 
-        ys = np.array(ys)
+        ys = ys
         self._last = xs, ys
         return ys
 
@@ -78,9 +82,8 @@ class Layer(object):
     # backprop.
     def backward(self, dys):
         xs, ys = self._last
-
-        dxs = []
-        dws = []
+        dxs = np.zeros((len(dys), self.N)) # BATCH x N input derivatives
+        dws = np.zeros((len(dys), self.N + 1)) # BATCH x N+1 weight derivatives
         for i, dy in enumerate(dys):
             x = xs[i]
             y = ys[i]
@@ -88,18 +91,16 @@ class Layer(object):
             # how the weights affect total loss (derivative w.r.t w)
             dz = dy * (y * (1 - y))
             dw = np.array([d * x for d in dz])
-            dws.append(dw)
+            dws[i] = dw
 
             # how the input (out of previous layer) affect total loss (derivative
             # w.r.t x). Derivates of the reverse of the forward pass.
             dx = np.dot(dz, self.W)
             dx = np.delete(dx, -1) # remove the bias input derivative
-            dxs.append(dx)
+            dxs[i] = dx
 
         # update
-        dws = np.array(dws)
-        dxs = np.array(dxs)
-        dw = sum(dws) / len(dws)
+        dw = sum(dws) / len(dws) # average out the weight derivatives
         self.W -= ALPHA * dw
         return dw, dx
 
