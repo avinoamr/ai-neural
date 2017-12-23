@@ -10,16 +10,15 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 0.1
-EPOCHS = 1000000
-H = 2 ** 4 # 2^N different combinations.
+ALPHA = 1
+EPOCHS = 200
 
 # In this simple example, we'll use a single binary weight. Our target will be
 # the same as the input, except that we'll have an outlier: the last instance
 # returns a wrong value. NOTE that obviously it means that a perfect loss of
 # zero cannot be obtain, but still the network should learn the correlation.
 X = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [1.]])
-T = np.array([[0., 0.], [0., 0.], [1., 0.], [1., 0.], [0., 0.], [0., 0.], [1., 0.], [0., 0.]]) # last index outlier!
+T = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [0.]]) # last outlier!
 
 # If we run out previous code as is, these outliers will have a significant
 # influence over our learning, because they're given a full STEP in their
@@ -30,7 +29,17 @@ T = np.array([[0., 0.], [0., 0.], [1., 0.], [1., 0.], [0., 0.], [0., 0.], [1., 0
 # slows learning a little bit, because we're only applying the STEP update twice
 # for each epoch, but in reality it's better because there's less error-
 # correction.
-BATCH = 2 # len(X) / 2 # = 1 <- try this for non-batch for comparison
+#
+# NOTE that when we use fully-batched learning (BATCH = len(X)), it must be the
+# case that the avg loss will go down between epochs. Otherwise, our leanring
+# rate is too high and we're oscilating or diverging. This is useful for finding
+# the right starting learning rate and ensuring that the algorithm works
+# properly.
+#
+# Non-batched:   BATCH = 1
+# Fully-batched: BATCH = len(X)
+# Mini-batching: Anything in between  1 < BATCH < len(x)
+BATCH = 4
 
 # Layer represents a single neural network layer of weights
 class Layer(object):
@@ -40,7 +49,9 @@ class Layer(object):
     def __init__(self, n, m):
         self.W = np.random.random((m, n + 1)) # +1 bias
 
-    # forward pass is the same as before.
+    # forward pass
+    # now accepts a list of BATCH inputs, xs - one per test case - each with N
+    # values - one per input neuron. Computes a list of BATCH outputs, ys.
     def forward2(self, xs):
         xs2 = []
         for x in xs:
@@ -55,21 +66,14 @@ class Layer(object):
             ys.append(y)
 
         ys = np.array(ys)
-
         self._last = xs, ys
         return ys
 
-    # forward pass is the same as before.
-    def forward(self, x):
-        x = np.append(x, 1.) # add the fixed input for bias
-        z = np.dot(self.W, x) # derivate: x
-        y = 1. / (1. + np.exp(-z)) # derivate: y(1 - y)
-
-        self._last = x, y
-        return y
-
-    # backward pass - compute the derivatives of each weight in this layer and
-    # update them.
+    # backward pass
+    # now accepts a list of BATCH dys - one per test case - each with M values -
+    # one per output neuron. Computes the average dw for all of these cases and
+    # updates once for that average. It also returns a list of BATCH dxs for
+    # backprop.
     def backward2(self, dys):
         # dy = dys[0]
         xs, ys = self._last
@@ -92,46 +96,32 @@ class Layer(object):
             dxs.append(dx)
 
         # update
+        dws = np.array(dws)
+        dxs = np.array(dxs)
         dw = sum(dws) / len(dws)
         self.W -= ALPHA * dw
         return dw, dx
 
-    # backward pass - compute the derivatives of each weight in this layer and
-    # update them.
-    def backward(self, dy):
-        x, y = self._last
-
-        # how the weights affect total loss (derivative w.r.t w)
-        dz = dy * (y * (1 - y))
-        dw = np.array([d * x for d in dz])
-
-        # how the input (out of previous layer) affect total loss (derivative
-        # w.r.t x). Derivates of the reverse of the forward pass.
-        dx = np.dot(dz, self.W)
-        dx = np.delete(dx, -1) # remove the bias input derivative
-
-        # update
-        self.W -= ALPHA * dw
-        return dw, dx
-
-l1 = Layer(1, 2)
+l = Layer(1, 1) # linear problem, no hidden layer.
 indices = range(len(X))
-data = zip(X, T)
 for i in xrange(EPOCHS):
     np.random.shuffle(indices)
-    # np.random.shuffle(data)
 
     e = 0.
-    for j2 in xrange(0, len(indices), BATCH):
-        minib = indices[j2:j2+BATCH]
+    for j in xrange(0, len(indices), BATCH):
+        # choose the indices in the data (X, T) to be used in this mini-batch
+        minib = indices[j:j+BATCH]
+
+        # forward
         xs = X[minib]
         ts = T[minib]
+        ys = l.forward2(xs)
 
-        ys = l1.forward2(xs)
+        # backward
         e += sum((ys - ts) ** 2 / 2)
         ds = ys - ts
 
-        l1.backward2(ds)
+        l.backward2(ds)
 
-    e /= len(data)
+    e /= len(X)
     print "%s: LOSS = %s" % (i, sum(e))
