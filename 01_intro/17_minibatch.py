@@ -16,9 +16,9 @@ EPOCHS = 200
 # In this simple example, we'll use a single binary weight. Our target will be
 # the same as the input, except that we'll have an outlier: the last instance
 # returns a wrong value. NOTE that obviously it means that a perfect loss of
-# zero cannot be obtain, but still the network should learn the correlation.
+# zero cannot be obtained, but still the network should learn the correlation.
 X = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [1.]])
-T = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [0.]]) # last outlier!
+T = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [0.]]) # outlier last!
 
 # If we run out previous code as is, these outliers will have a significant
 # influence over our learning, because they're given a full STEP in their
@@ -34,7 +34,9 @@ T = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [0.]]) # last outlier!
 # case that the avg loss will go down between epochs. Otherwise, our leanring
 # rate is too high and we're oscilating or diverging. This is useful for finding
 # the right starting learning rate and ensuring that the algorithm works
-# properly.
+# properly. This is not the case for online (BATCH = 1) or minibatches, because
+# a single batch might contain outliers that pushes the weights in the wrong
+# direction for future batches.
 #
 # Non-batched:   BATCH = 1
 # Fully-batched: BATCH = len(X)
@@ -52,13 +54,13 @@ class Layer(object):
     # forward pass
     # now accepts a list of BATCH inputs, xs - one per test case - each with N
     # values - one per input neuron. Computes a list of BATCH outputs, ys.
-    def forward2(self, xs):
-        xs2 = []
-        for x in xs:
-            x = np.append(x, 1.)
-            xs2.append(x)
+    def forward(self, xs):
 
-        xs = np.array(xs2)
+        # add the bias in one go to all of the data by creating a new vector of
+        # 1s and then concatenating it with the input xs.
+        bias = np.ones((xs.shape[0], 1)) # can be a constant
+        xs = np.concatenate((xs, bias), axis=1)
+
         ys = []
         for x in xs:
             z = np.dot(self.W, x) # derivate: x
@@ -74,8 +76,7 @@ class Layer(object):
     # one per output neuron. Computes the average dw for all of these cases and
     # updates once for that average. It also returns a list of BATCH dxs for
     # backprop.
-    def backward2(self, dys):
-        # dy = dys[0]
+    def backward(self, dys):
         xs, ys = self._last
 
         dxs = []
@@ -115,13 +116,12 @@ for i in xrange(EPOCHS):
         # forward
         xs = X[minib]
         ts = T[minib]
-        ys = l.forward2(xs)
+        ys = l.forward(xs)
 
         # backward
         e += sum((ys - ts) ** 2 / 2)
-        ds = ys - ts
-
-        l.backward2(ds)
+        dys = ys - ts
+        l.backward(dys)
 
     e /= len(X)
     print "%s: LOSS = %s" % (i, sum(e))
