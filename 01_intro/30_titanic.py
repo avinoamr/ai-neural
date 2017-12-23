@@ -18,10 +18,12 @@
 # [1] https://www.kaggle.com/c/titanic
 import csv
 import numpy as np
+import copy
 np.random.seed(1)
 
-STEP = 4
-EPOCHS = 2500
+STEP = 2
+EPOCHS = 25000000
+H = 20
 
 # read the data from the CSV file and break the data into an input and output
 # sets, each is a list of (k,v) tuples
@@ -40,7 +42,7 @@ out_vocab = set(T)
 # a huge amount of time to converge. Other methods, like adapatable leanring
 # rate can also work around that issue, arguably in a more generic and robust
 # way.
-BATCHSIZE = len(data) / 4
+BATCHSIZE = len(data) #  / 4
 
 class OneHot(object):
     def __init__(self, alphabet):
@@ -97,12 +99,12 @@ class Layer(object):
 
 inp = OneHot(list(inp_vocab))
 out = OneHot(list(out_vocab))
-l1 = Layer(inp.N, 20)
-l2 = Layer(20, out.N)
+l1 = Layer(inp.N, H)
+l2 = Layer(H, out.N)
 
 w = np.zeros((out.N, 1 + inp.N)) # +1 for bias
+last_l = float('inf')
 for i in xrange(EPOCHS):
-    np.random.shuffle(data)
     l = 0
 
     accuracy = 0
@@ -137,11 +139,14 @@ for i in xrange(EPOCHS):
         l2.W += STEP * -dw2 # mini-batch update
 
     l /= len(data)
-    print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, sum(l), accuracy, len(data))
+    l = sum(l)
+    print "%s: LOSS = %s (%s); ACCURACY = %d of %d" % (i, l, l - last_l, accuracy, len(data))
 
-    if i >= 100 and i % 100 == 0:
-        STEP *= 0.99
-        print "STEP = %f" % STEP
+    if l - last_l > 0:
+        STEP *= 0.9999
+        print "%s: STEP = %f" % (i, STEP)
+    else:
+        last_l = l
 
 print
 print "W = %s" % l1.W
