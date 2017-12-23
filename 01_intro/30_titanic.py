@@ -21,7 +21,7 @@ import numpy as np
 import copy
 np.random.seed(1)
 
-STEP = 2
+STEP = 5
 EPOCHS = 25000000
 H = 20
 
@@ -105,6 +105,7 @@ l2 = Layer(H, out.N)
 w = np.zeros((out.N, 1 + inp.N)) # +1 for bias
 last_l = float('inf')
 for i in xrange(EPOCHS):
+    np.random.shuffle(data)
     l = 0
 
     accuracy = 0
@@ -142,11 +143,11 @@ for i in xrange(EPOCHS):
     l = sum(l)
     print "%s: LOSS = %s (%s); ACCURACY = %d of %d" % (i, l, l - last_l, accuracy, len(data))
 
-    if l - last_l > 0:
-        STEP *= 0.9999
-        print "%s: STEP = %f" % (i, STEP)
-    else:
-        last_l = l
+    # if l - last_l > 0:
+    #     STEP *= 0.9999
+    #     print "%s: STEP = %f" % (i, STEP)
+    # else:
+    last_l = l
 
 print
 print "W = %s" % l1.W
