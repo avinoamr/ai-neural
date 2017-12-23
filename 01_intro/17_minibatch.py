@@ -39,9 +39,9 @@ T = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [0.]]) # outlier last!
 # a single batch might contain outliers that pushes the weights in the wrong
 # direction for future batches.
 #
-# Non-batched:   BATCH = 1
-# Fully-batched: BATCH = len(X)
-# Mini-batching: Anything in between  1 < BATCH < len(x)
+# Online non-batched: BATCH = 1
+# Fully-batched:      BATCH = len(X)
+# Mini-batching:      1 < BATCH < len(x)
 BATCH = 4
 
 # Layer represents a single neural network layer of weights
@@ -50,8 +50,7 @@ class Layer(object):
     _last = (None, None) # input, output
 
     def __init__(self, n, m):
-        self.N = n
-        self.M = m
+        self.N, self.M = n, m
         self.W = np.random.random((m, n + 1)) # +1 bias
 
     # forward pass
