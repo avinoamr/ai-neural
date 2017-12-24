@@ -8,12 +8,14 @@
 # function is expected to be lower. Repeat for a 1000 iterations and stop. The
 # final inputs will be the local minima of the function, if one exists.
 import numpy as np
-np.random.seed(1)
+np.random.seed(1) # constant seed for reproducible results
 
 # f(x0,x1) - the function we want to minimize. It can be anything you want! Note
 # however, that if this function doesn't have a minima, it can get inifinitely
 # negative, and thus no minima will be found even after infinite iterations. So,
-# for this demonstration, we'll remove negatives by squaring it.
+# for this demonstration, we'll remove negatives by squaring it. It can be
+# assumed that this function is unknown, and resides as a compiled black-box and
+# may contain arbitrary and complicated logic
 def f(x0, x1):
     return (x0 - x1) ** 2
 
@@ -34,7 +36,7 @@ for i in xrange(ITERATIONS):
     yx0 = f(x0 + E, x1)
     yx1 = f(x0, x1 + E)
 
-    # derivatives of x and y - or how the output of f(x, y) changes w.r.t x, y
+    # derivatives of x0 and x1 - or how the output of f changes w.r.t x0, x1
     dx0 = (yx0 - y) / E
     dx1 = (yx1 - y) / E
 
