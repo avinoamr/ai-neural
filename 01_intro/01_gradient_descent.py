@@ -22,11 +22,11 @@ def f(x0, x1):
 # constants - these can be learned as well! Maybe we'll cover it later.
 E = 0.0001 # epsilon; infinitisimal size of probes to find derivatives
 ALPHA = 0.01 # size of the steps to take in the gradient direction
-ITERATIONS = 225 # number of probes/step to take
+ITERATIONS = 150 # number of probes/step to take
 
 # initial values in [-10 .. +10]
-x0 = np.random.rand() * 20 - 10
-x1 = np.random.rand() * 20 - 10
+x0 = np.random.rand()
+x1 = np.random.rand()
 
 for i in xrange(ITERATIONS):
     y = f(x0, x1)

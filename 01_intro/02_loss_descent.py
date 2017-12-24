@@ -14,7 +14,7 @@ np.random.seed(1)
 T = 3. # target: this is number we want to hit
 E = 0.0001
 ALPHA = 0.01
-ITERATIONS = 150
+ITERATIONS = 200
 
 # f(x0,x1) - the function we want to fix at the T value.
 # It no longer need to be lower-bounded, because we're not minimizing it
@@ -38,8 +38,8 @@ def loss(y):
     return (y - T) ** 2
 
 # initial values, start at zero
-x0 = np.random.rand() * 20 - 10
-x1 = np.random.rand() * 20 - 10
+x0 = np.random.rand()
+x1 = np.random.rand()
 
 # we're starting with computing the loss of our function. The actual value of f
 # is of no interest for us, only its loss is. When the loss = 0 (minima), we
