@@ -11,10 +11,10 @@
 # learning a threshold line in the function where values below these threshold
 # doesn't belong to a class, and values above it do.
 import numpy as np
+# np.random.seed(1)
 
 EPOCHS = 300
-STEP = 0.01
-BATCHSIZE = 8
+ALPHA = 0.01
 
 # Our 1-dimensional input is the sex of the passenger: m (male) or f (female)
 # Our output is a number, either 1 (survived) or 0 (didn't survive)
@@ -36,9 +36,9 @@ T = [ 1,   0,   1,   1,   1,   0,   0,   0,   1,   0,   1,   1,   1,   0 ]
 # The best known approach currently is one-hot (or one-of-k) in which each value
 # is assigned a completely different input. If we have k values, we'll use
 # k input neurons (one for male and the other for female) in which only one
-# neuron can be lit (value of 1) at any given time. If we have multiple
-# categories we can concatenate multiple such one-of-k's as needed as that
-# maintains the fact that each value is assign a separate input and weight.
+# neuron can be lit (value of 1) for any given training case. If we have
+# multiple categories we can concatenate multiple such one-of-k's as needed as
+# that maintains the fact that each value is assign a separate input and weight.
 N = len(set(X)) # 1 per unique value
 
 # encode an input string into a one-of-k. We want to return a list of numbers,
@@ -51,9 +51,10 @@ def one_of_k(v):
     x[idx] = 1.
     return x
 
-w = np.zeros(1 + N) # +1 for the bias.
+w = np.random.random(1 + N) # +1 for the bias.
 data = zip(X, T)
 for i in xrange(EPOCHS):
+    np.random.shuffle(data)
     l = 0
 
     # we will now also compute the accuracy as a count of how many instances in
@@ -63,31 +64,29 @@ for i in xrange(EPOCHS):
     accuracy = 0
 
     # mini-batches
-    for j in xrange(0, len(data), BATCHSIZE):
-        minib = data[j:j+BATCHSIZE]
-        dw = 0
-        for v, t in minib:
-            x = one_of_k(v)
-            x = np.insert(x, 0, 1.) # add the fixed bias.
+    for v, t in data:
 
-            # compute the loss & derivatives
-            y = sum(x * w)
-            l += (y - t) ** 2 / 2
-            dy = (y - t)
-            dw += dy * x
+        # predict
+        x = one_of_k(v)
+        x = np.insert(x, 0, 1.) # add the fixed bias.
+        y = sum(x * w)
 
-            # did we predict correctly? We need to transform the output number
-            # into a boolean prediction: whether the label should be turned on
-            # or off. For this example, we'll simply see if the prediction is
-            # closer to 0 or 1, by first clipping to the [0, 1] range in order
-            # to trim values outside of this range, and then rounding.
-            accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
+        # compute the loss & derivatives
+        l += (y - t) ** 2 / 2
+        dy = (y - t)
+        dw = dy * x
 
-        dw /= len(minib)
-        w += STEP * -dw # mini-batch update
+        # did we predict correctly? We need to transform the output number
+        # into a boolean prediction: whether the label should be turned on
+        # or off. For this example, we'll simply see if the prediction is
+        # closer to 0 or 1, by first clipping to the [0, 1] range in order
+        # to trim values outside of this range, and then rounding.
+        accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
+
+        w += ALPHA * -dw # mini-batch update
 
     l /= len(data)
-    print "%s LOSS = %f ; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
+    print "%s: LOSS = %f ; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
 
 print
 print "W = %s" % w

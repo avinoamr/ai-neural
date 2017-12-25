@@ -37,6 +37,8 @@ data = zip(X, T) # single data set of (x, y) tuples
 
 # instead generating a massive list here, we're just repeating the same one.
 for i in xrange(EPOCHS):
+    np.random.shuffle(data)
+
     l = 0 # total loss in this epoch
     for x, t in data:
 
