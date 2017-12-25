@@ -76,14 +76,15 @@ for i in xrange(EPOCHS):
         dy = (y - t)
         dw = dy * x
 
+        # update
+        w += ALPHA * -dw # mini-batch update
+
         # did we predict correctly? We need to transform the output number
         # into a boolean prediction: whether the label should be turned on
         # or off. For this example, we'll simply see if the prediction is
         # closer to 0 or 1, by first clipping to the [0, 1] range in order
         # to trim values outside of this range, and then rounding.
         accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
-
-        w += ALPHA * -dw # mini-batch update
 
     l /= len(data)
     print "%s: LOSS = %f ; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
