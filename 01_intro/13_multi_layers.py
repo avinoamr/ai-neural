@@ -13,9 +13,9 @@
 # x^2, x^3, log(x), exp(x), etc. But it's unlikely we'll cover every possible
 # non-linear function and parameters, and it will take a massive input size. (2)
 # we can use the bias trick to feed in additional mathmatical components, like
-# the exponent 2 - but still unlikely to cover everything.
-# This still holds for classification problems where we may want something
-# that's more like a step-function (if-then clause).
+# the exponent 2 - but still unlikely to cover everything. This still holds for
+# classification problems where we may want something that's more like a
+# step-function (if-then clause; will be explored later).
 #
 # It would be easier if we would have a way to learn these different inputs
 # features, instead of hand-coding all of the ones we can think of. That's
@@ -28,7 +28,7 @@
 #
 # In fact, it was proven that any function can be approximated using some
 # combinations of the aforementioned activation functions, regardless of how
-# weird or complicated it is. See the link below for more intuition, but
+# weird or complicated it is. See the link[1] below for more intuition, but
 # generally this is how can think about it:
 #
 # (1) say we have a function that generates some curve (or even a step function)
@@ -44,7 +44,7 @@
 # (3) If we choose enough such functions for infinitely small sub-segments, we
 # can control the error-rate of our approximation.
 #
-# See more: http://neuralnetworksanddeeplearning.com/chap4.html
+# [1] See more: http://neuralnetworksanddeeplearning.com/chap4.html
 #
 # So, within a single hidden layer, we want to assign some params for
 # controlling the first function, and then another set for controlling the
@@ -55,12 +55,12 @@
 # in the hidden layers.
 import numpy as np
 
-STEP = .5
+ALPHA = .5
 EPSILON = 0.0001 # it's back!
 
 # our example data includes only a single 2D instance. We're using fixed values,
 # and only a single epoch in order to avoid all randomness and measure the
-# expected updated weights.
+# exact updated weights.
 X = np.array([.05, .10])
 T = np.array([.01, .99])
 
@@ -73,8 +73,6 @@ Why = np.array([[.40, .45, .60], [.50, .55, .60]]) # hidden to output
 # In order to avoid code repetition for each weights matrix, we'll use a Layer
 # class to implement the prediction and derivatives:
 class Layer(object):
-    W = None
-
     def __init__(self, w):
         self.W = w
 
@@ -136,7 +134,7 @@ for w in Ws: # iterate over all weight matrices in the network
 
 # Now we're ready for our update - same as before:
 for W, dW in zip(Ws, dWs):
-    W += STEP * dW
+    W += ALPHA * dW
 
 # print the updated weights
 print "l1.W ="
