@@ -17,29 +17,25 @@ import numpy as np
 ALPHA = 0.5
 
 # we're going to use the same fixed input and weights as before:
-X   = np.array([.05, .10])
-T   = np.array([.01, .99])
+X = np.array([.05, .10])
+T = np.array([.01, .99])
 
 Wxh = np.array([[.15, .20, .35], [.25, .30, .35]])
 Why = np.array([[.40, .45, .60], [.50, .55, .60]])
 
 # Layer represents a single neural network layer of weights
 class Layer(object):
-    W = None
-
-    # we will need to store the information of the last input and output in
-    # order to derive analytically.
-    _last = (None, None) # input, output
-
     def __init__(self, w):
         self.W = w
 
     # forward pass is the same as before.
     def forward(self, x):
-        x = np.append(x, 1.) # add the fixed input for bias
-        z = np.dot(self.W, x) # derivate: x
+        x = np.append(x, 1.)
+        z = np.dot(self.W, x)
         y = 1. / (1. + np.exp(-z))
 
+        # we will need to store the information of the last input and output in
+        # order to derive analytically.
         self._last = x, y
         return y
 
@@ -48,7 +44,7 @@ class Layer(object):
     #
     # This function is the heart of the back-propagation algorithm. It does two
     # things: (a) it computes the derivatives of its local weights and updates,
-    # and (b) it returns the derivatives of the output from the previous  layer.
+    # and (b) it returns the derivatives of the output from the previous layer.
     # This is required in order to allow the previous layer to compute its own
     # derivatives in (a).
     #
@@ -109,8 +105,9 @@ class Layer(object):
         #
         # Now all that's left to know is how that output affects the error. We
         # already know that! It's the input we received to this function (dy).
-        # All that's left to do is chain these two terms together. NOTE that
-        # this entire loop is can be re-written as: dx = np.dot(dz, dz_dx)
+        # All that's left to do is chain these two terms together.
+        #
+        # NOTE Same as: dx = np.dot(dz, dz_dx)
         dx = np.zeros(len(x)) # our result - derivative of total loss w.r.t x
         for i in xrange(len(y)):
             # this y[i] affects the total loss by dy[i]. We know that. Now we
