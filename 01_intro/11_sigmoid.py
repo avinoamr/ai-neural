@@ -13,19 +13,17 @@
 # This is because the range of the output is [-inf .. +inf] while the range of
 # the target is [0..1].
 #
-# In the next few exercises, we'll explore several activation functions to help
-# model our output more elegantly. An activation function defines the output of
-# a node given its inputs. It allows use to add non-linear operations to make
-# the input fit within the constraints we've set up. In this example, we'll
-# explore the sigmoid function that squashes the weighted values (z) into the
-# desired range: [0..1]:
+# An activation function defines the output of a node given its inputs. It
+# allows use to add non-linear operations to make the input fit within the
+# constraints we've set up. In this example, we'll explore the sigmoid function
+# that squashes the weighted values (z) into the desired range: [0..1]:
 #
-#   y = sigmoid(z) = 1 / (1 + exp(-z))
-#   dy/dz = sigmoid'(z) wrt z = y * (1 - y)   # look it up on line to learn more
+#   y = sigmoid(z) = 1 / (1 + exp(-z))      # z is the net input (sum of w * x)
+#   dy/dz = y * (1 - y)                     # look it up on line to learn more
 #
-# This function has the interesting property that it's an S-curved function that
-# goes towards 0 for infinitely negative z, and goes towards 1 for infinitely
-# positive z. So it squashes any z value to [0..1]. So now:
+# This function has the interesting property that it's S-curved. It goes towards
+# 0 for infinitely negative z, and goes towards 1 for infinitely positive z. So
+# it squashes any z value to [0..1]. So now:
 #
 #   z = [-5, 5]     sigmoid(z) = [0.006, 0.993]     t = [0, 1]  loss = [0, 0]
 #
@@ -35,10 +33,10 @@
 # be covered further here - first is the hyperbolic function (tanh) which is
 # very similar to sigmoid:
 #
-#   y = tanh(z) = 2 * sigmoid(2z) - 1)
-#   dy/dz = tanh'(z) wrt z = 1 - y^2   # look it up on line to learn more
+#   y = tanh(z) = 2 * sigmoid(2z) - 1
+#   dy/dz = 1 - y^2   # look it up on line to learn more
 #
-# It has a interesting property that it's mean is at zero (when z = 0, y = 0,
+# It has an interesting property that it's mean is at zero (when z = 0, y = 0,
 # instead of y = .5 in sigmoid). We will not implement it here as it's a bit
 # redundant.
 #
@@ -83,8 +81,9 @@
 # non-linearity is the main purpose of activation functions, more than squashing
 # for example.
 import numpy as np
+np.random.seed(1)
 
-STEP = .1
+ALPHA = .1
 EPOCHS = 100
 
 # Say we want to build a simple program to dechiper code. We're given a few
@@ -93,14 +92,6 @@ EPOCHS = 100
 X = "croj dsmujlayfxjpygjtdwzbjyeoajcrojvkihjnyq*"
 T = "the quick brown fox jumps over the lazy dog!"
 data = zip(X, T)
-
-# since we know that the data has no noise, using mini-batches will
-# significantly slow down learning. We're turning it off by using a batch size
-# of 1 which means that the weights will be updated for every single observation
-# in the data, similar to online learning. If our data was based on a real-life
-# text that might have some imperfections - bigger batches would've been able
-# to cancel out that noise.
-BATCHSIZE = 1
 
 class OneHot(object):
     def __init__(self, alphabet):
@@ -125,47 +116,43 @@ for i in xrange(EPOCHS):
     l = 0
     accuracy = 0
 
-    for j in xrange(0, len(data), BATCHSIZE):
-        minib = data[j:j+BATCHSIZE]
-        dw = 0
+    for v, target in data:
+        x = inp.encode(v)
+        x = np.insert(x, 0, 1.)
 
-        for v, target in minib:
-            x = inp.encode(v)
-            x = np.insert(x, 0, 1.)
+        # predict, and before decoding, we'll squash the weighted values
+        # with the sigmoid activation function
+        z = np.dot(w, x)
+        y = 1. / (1. + np.exp(-z)) # sigmoid; in the range of [0..1]
 
-            # predict, and before decoding, we'll squash the weighted values
-            # with the sigmoid activation function
-            z = np.dot(w, x)
-            y = 1. / (1. + np.exp(-z)) # in the range of [0..1]
-            res = out.decode(y)
-            accuracy += 1 if res == target else 0
+        # loss and derivatives
+        t = out.encode(target) # encode target string to one-hot activation
+        l += (y - t) ** 2 / 2
+        dy = y - t
 
-            # loss and derivatives
-            t = out.encode(target) # encode target string to one-hot activation
-            l = (y - t) ** 2 / 2
-            dy = y - t
+        # now - because we've added a term to the forward pass (computing
+        # the output / predicting), we need to symmetrically derive that
+        # newly added expression. We need to find (1) how y changes when z
+        # changes (dy/dz), and then use the chain rule to combine that
+        # affect with (2) dloss/dy to deterine how the loss changes when we
+        # change z (dE/dz). But because (2) was already computed above,
+        # we're only left with the derivative of the sigmoid function itself
+        #
+        # NOTE the theme here: every expression we add to the forward
+        # computation pass, must be derived in reverse order on the backward
+        # computation pass (derivation) while chaining all of these partial
+        # derivatives.
+        #
+        # Recall: sigmoid'(z) wrt z = y * (1 - y)
+        dz = dy * (y * (1 - y))
 
-            # now - because we've added a term to the forward pass (computing
-            # the output / predicting), we need to symmetrically derive that
-            # newly added expression. We need to find (1) how y changes when z
-            # changes (dy/dz), and then use the chain rule to combine that
-            # affect with (2) dloss/dy to deterine how the loss changes when we
-            # change z (dE/dz). But because (2) was already computed above,
-            # we're only left with the derivative of the sigmoid function itself
-            #
-            # NOTE the theme here: every expression we add to the forward
-            # computation pass, must be derived in reverse order on the backward
-            # computation pass (derivation) while chaining all of these partial
-            # derivatives.
-            #
-            # Recall: sigmoid'(z) wrt z = y * (1 - y)
-            dz = dy * (y * (1 - y))
+        # and finally, same as before, chain with dz/dw:
+        dw = np.array([dyi * x for dyi in dz])
+        w += ALPHA * -dw
 
-            # and finally, same as before, chain with dz/dw:
-            dw += np.array([dyi * x for dyi in dz])
-
-        dw /= len(minib)
-        w += STEP * -dw
+        # decode the predicted value to determine equality/accuracy
+        res = out.decode(y)
+        accuracy += 1 if res == target else 0
 
     l = sum(l) / len(data)
     print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
@@ -174,8 +161,7 @@ for i in xrange(EPOCHS):
 X = "scjfyaub*"
 result = ""
 for v in X:
-
-    # copy-paste of the forward pass. TODO: DRY
+    # copy-paste of the forward pass.
     x = inp.encode(v)
     x = np.insert(x, 0, 1.)
     z = np.dot(w, x)
@@ -184,4 +170,3 @@ for v in X:
 
 print
 print X + " = " + result
-print
