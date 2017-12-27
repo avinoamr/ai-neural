@@ -21,9 +21,9 @@ import numpy as np
 import copy
 np.random.seed(1)
 
-STEP = 5
+STEP = 1.8
 EPOCHS = 25000000
-H = 20
+H = 30
 
 # read the data from the CSV file and break the data into an input and output
 # sets, each is a list of (k,v) tuples
@@ -68,7 +68,7 @@ class Layer(object):
     _last = (None, None) # input, output
 
     def __init__(self, n, m):
-        self.W = np.random.random((m, n + 1)) # +1 bias
+        self.W = np.random.randn(m, n + 1) * 0.01
 
     # forward pass is the same as before.
     def forward(self, x):
