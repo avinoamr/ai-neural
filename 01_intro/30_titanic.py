@@ -52,7 +52,7 @@ class OneHot(object):
 
     def encode(self, vs):
         indices = [self.vocab.index(v) for v in sorted(vs)]
-        x = np.zeros(self.N)
+        x = np.zeros(len(self.vocab))
         x[indices] = 1.
         return x
 
