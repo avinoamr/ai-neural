@@ -21,22 +21,24 @@ import numpy as np
 import copy
 np.random.seed(1)
 
-STEP = 1.8
+STEP = 5
 EPOCHS = 25000000
 H = 30
+INPUTS = [
+    ("Fare", "cheap"), ("Fare", "low"), ("Fare", "medium"), ("Fare", "high"),
+    ("Family", "alone"), ("Family", "small"), ("Family", "medium"), ("Family", "big"),
+    ("Embarked", "S"), ("Embarked", "C"), ("Embarked", "Q"),
+    ("Age", "kid"), ("Age", "young"), ("Age", "adult"), ("Age", "old"),
+    ("Pclass", "1"), ("Pclass", "2"), ("Pclass", "3"),
+    ("Sex", "male"), ("Sex", "female")
+]
+OUTPUTS = ["0", "1"]
 
 # read the data from the CSV file and break the data into an input and output
 # sets, each is a list of (k,v) tuples
 data = [d for d in csv.DictReader(open("30_titanic.csv"))]
-T = [("Survived", d.pop("Survived")) for d in data]
+T = [d.pop("Survived") for d in data]
 X = [d.items() for d in data]
-data = zip(X, T)
-
-inp_vocab = set()
-for d in X:
-    inp_vocab.update(d)
-
-out_vocab = set(T)
 
 # we have a lot of noise - if you try a batchsize of 1, you'll see that it takes
 # a huge amount of time to converge. Other methods, like adapatable leanring
@@ -45,22 +47,17 @@ out_vocab = set(T)
 BATCHSIZE = len(data) #  / 4
 
 class OneHot(object):
-    def __init__(self, alphabet):
-        self.alphabet = alphabet
-        self.N = len(alphabet)
+    def __init__(self, vocab):
+        self.vocab = vocab
 
-    def encode(self, *vs):
+    def encode(self, vs):
+        indices = [self.vocab.index(v) for v in sorted(vs)]
         x = np.zeros(self.N)
-        for v in vs:
-            try:
-                idx = self.alphabet.index(v)
-                x[idx] = 1.
-            except ValueError:
-                pass
+        x[indices] = 1.
         return x
 
-    def decode(self, y):
-        return self.alphabet[np.argmax(y)]
+    def encode_all(self, data):
+        return np.array([self.encode(d) for d in data])
 
 # Layer represents a single neural network layer of weights
 class Layer(object):
@@ -97,12 +94,14 @@ class Layer(object):
         # self.W -= ALPHA * dw
         return dw, dx
 
-inp = OneHot(list(inp_vocab))
-out = OneHot(list(out_vocab))
-l1 = Layer(inp.N, H)
-l2 = Layer(H, out.N)
+# enode all of the inputs and targets
+X = OneHot(INPUTS).encode_all(X)
+T = OneHot(OUTPUTS).encode_all(T)
+data = zip(X, T)
 
-w = np.zeros((out.N, 1 + inp.N)) # +1 for bias
+# create the layers
+l1 = Layer(len(INPUTS), H)
+l2 = Layer(H, len(OUTPUTS))
 last_l = float('inf')
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
@@ -113,18 +112,11 @@ for i in xrange(EPOCHS):
         minib = data[j:j+BATCHSIZE]
         dw1 = 0
         dw2 = 0
-        for v, target in minib:
-            x = inp.encode(*v) # encode the input features into multiple 1-of-key's
+        for x, t in minib:
             h = l1.forward(x)
             y = l2.forward(h)
 
-            # x = np.insert(x, 0, 1.) # fixed bias
-            # y = np.dot(w, x) # compute the prediction
-            res = out.decode(y) # a string, either "S" or "D"
-            accuracy += 1 if res == target else 0 # simple as that!
-
             # loss and derivatives
-            t = out.encode(target)
             l += (y - t) ** 2 / 2
             dy = y - t
 
@@ -132,7 +124,10 @@ for i in xrange(EPOCHS):
             dw1_, dx = l1.backward(dh)
             dw1 += dw1_
             dw2 += dw2_
-            # dw += np.array([dyi * x for dyi in dy]) # Mx(1 + N) derivatives
+
+            # check the accuracy
+            correct = np.argmax(y) == np.argmax(t)
+            accuracy += 1 if correct else 0
 
         dw1 /= len(minib)
         dw2 /= len(minib)
