@@ -37,7 +37,7 @@ OUTPUTS = ["0", "1"]
 # read the data from the CSV file and break the data into an input and output
 # sets, each is a list of (k,v) tuples
 data = [d for d in csv.DictReader(open("30_titanic.csv"))]
-T = [d.pop("Survived") for d in data]
+T = [[d.pop("Survived")] for d in data]
 X = [d.items() for d in data]
 
 # we have a lot of noise - if you try a batchsize of 1, you'll see that it takes
@@ -47,14 +47,12 @@ X = [d.items() for d in data]
 BATCHSIZE = len(data) #  / 4
 
 class OneHot(list):
-    def encode(self, vs):
-        indices = [self.index(v) for v in sorted(vs)]
-        x = np.zeros(len(self))
-        x[indices] = 1.
+    def encode(self, data):
+        x = np.zeros((len(data), len(self)))
+        for i, vs in enumerate(data):
+            indices = [self.index(v) for v in sorted(vs)]
+            x[i][indices] = 1.
         return x
-
-    def encode_all(self, data):
-        return np.array([self.encode(d) for d in data])
 
 # Layer represents a single neural network layer of weights
 class Layer(object):
@@ -92,8 +90,8 @@ class Layer(object):
         return dw, dx
 
 # enode all of the inputs and targets
-X = OneHot(INPUTS).encode_all(X)
-T = OneHot(OUTPUTS).encode_all(T)
+X = OneHot(INPUTS).encode(X)
+T = OneHot(OUTPUTS).encode(T)
 data = zip(X, T)
 
 # create the layers
