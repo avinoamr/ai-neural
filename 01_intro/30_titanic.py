@@ -46,13 +46,10 @@ X = [d.items() for d in data]
 # way.
 BATCHSIZE = len(data) #  / 4
 
-class OneHot(object):
-    def __init__(self, vocab):
-        self.vocab = vocab
-
+class OneHot(list):
     def encode(self, vs):
-        indices = [self.vocab.index(v) for v in sorted(vs)]
-        x = np.zeros(len(self.vocab))
+        indices = [self.index(v) for v in sorted(vs)]
+        x = np.zeros(len(self))
         x[indices] = 1.
         return x
 
