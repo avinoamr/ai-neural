@@ -44,7 +44,7 @@ X = [d.items() for d in data]
 # a huge amount of time to converge. Other methods, like adapatable leanring
 # rate can also work around that issue, arguably in a more generic and robust
 # way.
-BATCHSIZE = len(X) #  / 4
+BATCH = len(X) #  / 4
 
 # OneHot encodes data of arbitrary features into a list of one-hot neuron
 # activations, each either a zero or one.
@@ -129,8 +129,8 @@ for i in xrange(EPOCHS):
     l = 0
 
     accuracy = 0
-    for j in xrange(0, len(indices), BATCHSIZE):
-        minib = indices[j:j+BATCHSIZE]
+    for j in xrange(0, len(indices), BATCH):
+        minib = indices[j:j+BATCH]
         xs = X[minib]
         ts = T[minib]
 
