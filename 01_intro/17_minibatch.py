@@ -70,7 +70,6 @@ class Layer(object):
             y = 1. / (1. + np.exp(-z)) # derivate: y(1 - y)
             ys[i] = y
 
-        ys = ys
         self._last = xs, ys
         return ys
 
@@ -101,7 +100,7 @@ class Layer(object):
         # update
         dw = sum(dws) / len(dws) # average out the weight derivatives
         self.W -= ALPHA * dw
-        return dw, dx
+        return dw, dxs
 
 l = Layer(1, 1) # linear problem, no hidden layer.
 indices = range(len(X))
