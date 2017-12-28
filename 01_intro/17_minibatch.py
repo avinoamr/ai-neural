@@ -51,7 +51,7 @@ class Layer(object):
 
     def __init__(self, n, m):
         self.N, self.M = n, m
-        self.W = np.random.random((m, n + 1)) # +1 bias
+        self.W = np.random.randn(m, n + 1) * 0.01
 
     # forward pass
     # now accepts a list of BATCH inputs, xs - one per test case - each with N
