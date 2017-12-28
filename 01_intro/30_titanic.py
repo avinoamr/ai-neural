@@ -145,10 +145,7 @@ for i in xrange(EPOCHS):
         dxs = l1.backward(dhs)
 
         # calculate accuracy
-        for i in range(len(minib)):
-            y = ys[i]
-            t = ts[i]
-            accuracy += 1 if np.argmax(y) == np.argmax(t) else 0
+        accuracy += sum(np.argmax(ys, axis=1) == np.argmax(ts, axis=1))
 
     l /= len(indices)
     l = sum(l)
