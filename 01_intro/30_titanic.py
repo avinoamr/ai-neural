@@ -21,7 +21,7 @@ import numpy as np
 import copy
 np.random.seed(1)
 
-STEP = 5
+ALPHA = 5
 EPOCHS = 25000000
 H = 30
 INPUTS = [
@@ -62,34 +62,57 @@ class Layer(object):
     _last = (None, None) # input, output
 
     def __init__(self, n, m):
+        self.N, self.M = n, m
         self.W = np.random.randn(m, n + 1) * 0.01
 
-    # forward pass is the same as before.
-    def forward(self, x):
-        x = np.append(x, 1.) # add the fixed input for bias
-        z = np.dot(self.W, x) # derivate: x
-        y = 1. / (1. + np.exp(-z)) # derivate: y(1 - y)
+    # forward pass
+    # now accepts a list of BATCH inputs, xs - one per test case - each with N
+    # values - one per input neuron. Computes a list of BATCH outputs, ys.
+    def forward(self, xs):
 
-        self._last = x, y
-        return y
+        # add the bias in one go to all of the data by creating a new vector of
+        # 1s and then concatenating it with the input xs.
+        bias = np.ones((xs.shape[0], 1)) # can be a constant
+        xs = np.concatenate((xs, bias), axis=1)
 
-    # backward pass - compute the derivatives of each weight in this layer and
-    # update them.
-    def backward(self, dy):
-        x, y = self._last
+        # BATCH x M outputs
+        ys = np.zeros((len(xs), self.M))
+        for i, x in enumerate(xs):
+            z = np.dot(self.W, x) # derivate: x
+            y = 1. / (1. + np.exp(-z)) # derivate: y(1 - y)
+            ys[i] = y
 
-        # how the weights affect total loss (derivative w.r.t w)
-        dz = dy * (y * (1 - y))
-        dw = np.array([d * x for d in dz])
+        self._last = xs, ys
+        return ys
 
-        # how the input (out of previous layer) affect total loss (derivative
-        # w.r.t x). Derivates of the reverse of the forward pass.
-        dx = np.dot(dz, self.W)
-        dx = np.delete(dx, -1) # remove the bias input derivative
+    # backward pass
+    # now accepts a list of BATCH dys - one per test case - each with M values -
+    # one per output neuron. Computes the average dw for all of these cases and
+    # updates once for that average. It also returns a list of BATCH dxs for
+    # backprop.
+    def backward(self, dys):
+        xs, ys = self._last
+        dxs = np.zeros((len(dys), self.N)) # BATCH x N input derivatives
+        dws = np.zeros((len(dys),) + self.W.shape) # BATCH x N+1 weight derivatives
+        for i, dy in enumerate(dys):
+            x = xs[i]
+            y = ys[i]
+
+            # how the weights affect total loss (derivative w.r.t w)
+            dz = dy * (y * (1 - y))
+            dw = np.array([d * x for d in dz])
+            dws[i] = dw
+
+            # how the input (out of previous layer) affect total loss (derivative
+            # w.r.t x). Derivates of the reverse of the forward pass.
+            dx = np.dot(dz, self.W)
+            dx = np.delete(dx, -1) # remove the bias input derivative
+            dxs[i] = dx
 
         # update
-        # self.W -= ALPHA * dw
-        return dw, dx
+        dw = sum(dws) / len(dws) # average out the weight derivatives
+        self.W -= ALPHA * dw
+        return dxs
 
 # enode all of the inputs and targets
 X = OneHot(INPUTS).encode(X)
@@ -99,6 +122,7 @@ T = OneHot(OUTPUTS).encode(T)
 l1 = Layer(len(INPUTS), H)
 l2 = Layer(H, len(OUTPUTS))
 indices = range(len(X))
+
 last_l = float('inf')
 for i in xrange(EPOCHS):
     np.random.shuffle(indices)
@@ -110,38 +134,26 @@ for i in xrange(EPOCHS):
         xs = X[minib]
         ts = T[minib]
 
-        dw1 = 0
-        dw2 = 0
-        for x, t in zip(xs, ts):
-            h = l1.forward(x)
-            y = l2.forward(h)
+        # forward
+        hs = l1.forward(xs)
+        ys = l2.forward(hs)
 
-            # loss and derivatives
-            l += (y - t) ** 2 / 2
-            dy = y - t
+        # backward
+        l += sum((ys - ts) ** 2 / 2)
+        dys = ys - ts
+        dhs = l2.backward(dys)
+        dxs = l1.backward(dhs)
 
-            dw2_, dh = l2.backward(dy)
-            dw1_, dx = l1.backward(dh)
-            dw1 += dw1_
-            dw2 += dw2_
-
-            # check the accuracy
-            correct = np.argmax(y) == np.argmax(t)
-            accuracy += 1 if correct else 0
-
-        dw1 /= len(minib)
-        dw2 /= len(minib)
-        l1.W += STEP * -dw1 # mini-batch update
-        l2.W += STEP * -dw2 # mini-batch update
+        # calculate accuracy
+        for i in range(len(minib)):
+            y = ys[i]
+            t = ts[i]
+            accuracy += 1 if np.argmax(y) == np.argmax(t) else 0
 
     l /= len(indices)
     l = sum(l)
     print "%s: LOSS = %s (%s); ACCURACY = %d of %d" % (i, l, l - last_l, accuracy, len(indices))
 
-    # if l - last_l > 0:
-    #     STEP *= 0.9999
-    #     print "%s: STEP = %f" % (i, STEP)
-    # else:
     last_l = l
 
 print
