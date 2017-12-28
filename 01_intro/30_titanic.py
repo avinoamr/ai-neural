@@ -44,7 +44,7 @@ X = [d.items() for d in data]
 # a huge amount of time to converge. Other methods, like adapatable leanring
 # rate can also work around that issue, arguably in a more generic and robust
 # way.
-BATCHSIZE = len(data) #  / 4
+BATCHSIZE = len(X) #  / 4
 
 class OneHot(list):
     def encode(self, data):
@@ -92,22 +92,25 @@ class Layer(object):
 # enode all of the inputs and targets
 X = OneHot(INPUTS).encode(X)
 T = OneHot(OUTPUTS).encode(T)
-data = zip(X, T)
 
 # create the layers
 l1 = Layer(len(INPUTS), H)
 l2 = Layer(H, len(OUTPUTS))
+indices = range(len(X))
 last_l = float('inf')
 for i in xrange(EPOCHS):
-    np.random.shuffle(data)
+    np.random.shuffle(indices)
     l = 0
 
     accuracy = 0
-    for j in xrange(0, len(data), BATCHSIZE):
-        minib = data[j:j+BATCHSIZE]
+    for j in xrange(0, len(indices), BATCHSIZE):
+        minib = indices[j:j+BATCHSIZE]
+        xs = X[minib]
+        ts = T[minib]
+
         dw1 = 0
         dw2 = 0
-        for x, t in minib:
+        for x, t in zip(xs, ts):
             h = l1.forward(x)
             y = l2.forward(h)
 
@@ -129,9 +132,9 @@ for i in xrange(EPOCHS):
         l1.W += STEP * -dw1 # mini-batch update
         l2.W += STEP * -dw2 # mini-batch update
 
-    l /= len(data)
+    l /= len(indices)
     l = sum(l)
-    print "%s: LOSS = %s (%s); ACCURACY = %d of %d" % (i, l, l - last_l, accuracy, len(data))
+    print "%s: LOSS = %s (%s); ACCURACY = %d of %d" % (i, l, l - last_l, accuracy, len(indices))
 
     # if l - last_l > 0:
     #     STEP *= 0.9999
