@@ -46,6 +46,8 @@ X = [d.items() for d in data]
 # way.
 BATCHSIZE = len(X) #  / 4
 
+# OneHot encodes data of arbitrary features into a list of one-hot neuron
+# activations, each either a zero or one.
 class OneHot(list):
     def encode(self, data):
         x = np.zeros((len(data), len(self)))
