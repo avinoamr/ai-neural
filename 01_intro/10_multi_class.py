@@ -23,49 +23,39 @@ ALPHA = 0.01
 # indicates if the passenger survived (S) or dieds (D). You can see how we can
 # now add other classes (injured?) to predict.
 # N = 2 (f, m) ; M = 2 (S, D)
-X = ["f", "m", "f", "m", "f", "m", "f", "m", "f", "m", "f", "m", "f", "m"]
-T = ["S", "D", "S", "S", "S", "D", "D", "D", "S", "D", "S", "S", "S", "D"]
-data = zip(X, T)
+X = [["f"], ["m"], ["f"], ["m"], ["f"], ["m"], ["f"], ["m"], ["f"], ["m"]]
+T = [["S"], ["D"], ["S"], ["S"], ["S"], ["D"], ["D"], ["D"], ["S"], ["D"]]
+INPUTS = ["m", "f"]
+OUTPUTS = ["S", "D"]
 
-class OneHot(object):
-    def __init__(self, alphabet):
-        self.alphabet = alphabet
-        self.N = len(alphabet)
-
-    def encode(self, v):
-        x = np.zeros(self.N)
-        idx = self.alphabet.index(v)
-        x[idx] = 1.
+# OneHot encodes data of arbitrary features into a list of one-hot neuron
+# activations, each either a zero or one.
+class OneHot(list):
+    def encode(self, data):
+        x = np.zeros((len(data), len(self)))
+        for i, vs in enumerate(data):
+            indices = [self.index(v) for v in sorted(vs)]
+            x[i][indices] = 1.
         return x
 
-    # Our y-vector contains multiple values now. Out of these, we want to
-    # pick one value that represents the result best in the alphabet of
-    # classes. For now - we'll just pick the y-value that has the highest
-    # activation. When then find the index of that value in the y-vector and
-    # use that that read the class of out the alphabet.
-    def decode(self, y):
-        # np.argmax(y) gives us the index of the maximum value in the y-vector
-        return self.alphabet[np.argmax(y)]
-
-
 # create the encoder (for the input) and decoder (for target and output)
-inp = OneHot(list(set(X))) # encode from gender to input neurons (x).
-out = OneHot(list(set(T))) # decode from output neurons (y) to S or D.
+X = OneHot(INPUTS).encode(X) # encode from gender to input neurons (x).
+T = OneHot(OUTPUTS).encode(T) # decode from output neurons (y) to S or D.
+data = zip(X, T)
 
 # Each output neuron has a full set of its own weights. This is called a
 # fully-connected network, because every output is connected to all inputs with
 # its own separate set of weights to be learned. So, if before we needed N + 1
 # weights, now we need Mx(1 + N) weights. Each vector represents the weights of
 # a single output neuron
-w = np.random.random((out.N, 1 + inp.N)) # add the bias weight to encoded values
+w = np.random.random((len(OUTPUTS), 1 + len(INPUTS))) # add the bias weight to encoded values
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
 
     # we will again compute the accuracy - but this time without rounding.
     accuracy = 0
     l = 0
-    for v, target in data:
-        x = inp.encode(v)
+    for x, t in data:
         x = np.insert(x, 0, 1.) # add the fixed bias.
 
         # instead of computing a single result y-value for the input, we now
@@ -74,14 +64,13 @@ for i in xrange(EPOCHS):
         # its weights vector.
         #
         # NOTE Same as: y = np.dot(w, x)
-        y = np.zeros(out.N)
-        for j in xrange(out.N):
+        y = np.zeros(len(OUTPUTS))
+        for j in xrange(len(OUTPUTS)):
             y[j] = sum(x * w[j])
 
         # loss and derivatives
         # Same as before - only now we need to repeat the computation of
         # loss and derivatives for each y-value.
-        t = out.encode(target) # encode target string to one-hot activation
         l += (y - t) ** 2 / 2 # vector of M-losses
         dy = y - t # vector of M derivatives w.r.t y, one per output value
 
@@ -105,8 +94,7 @@ for i in xrange(EPOCHS):
         # to use a threshold, instead we'll just pick the class assigned to
         # the neuron that exhibited the highest activation (most probable
         # predicted class). This is done by the output decoder:
-        res = out.decode(y) # a string, either "S" or "D"
-        accuracy += 1 if res == target else 0 # simple as that!
+        accuracy += 1 if np.argmax(y) == np.argmax(t) else 0 # simple as that!
 
     l = sum(l) / len(data)
     print "%s LOSS = %f ; ACCURACY = %d of %d" % (i, l, accuracy, len(data))

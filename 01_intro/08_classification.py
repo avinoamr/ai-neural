@@ -41,15 +41,17 @@ T = [ 1,   0,   1,   1,   1,   0,   0,   0,   1,   0,   1,   1,   1,   0 ]
 # that maintains the fact that each value is assign a separate input and weight.
 N = len(set(X)) # 1 per unique value
 
-# encode an input string into a one-of-k. We want to return a list of numbers,
-# where all are set zeros, but only one is to one. That should be applied to
-# each feature - one for value, and one for bias (fixed to 1). More features
-# would require a concatenation of such one-of-k's
+# encode the input data strings into a list of one-of-k's. We want to return a
+# list of numbers, where all are set zeros, but only one is to set to one. That
+# should be applied to each feature - one for value. More features would require
+# a concatenation of such one-of-k's
 def one_of_k(v):
     x = np.zeros(N)
     idx = ["m", "f"].index(v)
     x[idx] = 1.
     return x
+
+X = np.array([one_of_k(x) for x in X])
 
 w = np.random.random(1 + N) # +1 for the bias.
 data = zip(X, T)
@@ -64,12 +66,11 @@ for i in xrange(EPOCHS):
     accuracy = 0
 
     # mini-batches
-    for v, t in data:
+    for x, t in data:
 
         # predict
-        x = one_of_k(v)
         x = np.insert(x, 0, 1.) # add the fixed bias.
-        y = sum(x * w)
+        y = sum(w * x)
 
         # compute the loss & derivatives
         l += (y - t) ** 2 / 2
