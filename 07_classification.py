@@ -52,7 +52,7 @@ def one_of_k(v):
     return x
 
 X = np.array([one_of_k(x) for x in X])
-w = np.random.randn(1 + N) * 0.01 # start with small random weights
+w = np.random.randn(N + 1) * 0.01 # start with small random weights
 data = zip(X, T)
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
@@ -68,7 +68,7 @@ for i in xrange(EPOCHS):
     for x, t in data:
 
         # predict
-        x = np.insert(x, 0, 1.) # add the fixed bias.
+        x = np.append(x, 1.) # add the fixed bias.
         y = sum(w * x)
 
         # error & derivatives

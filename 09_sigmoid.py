@@ -107,13 +107,13 @@ X = OneHot(INPUTS).encode([[c] for c in X])
 T = OneHot(OUTPUTS).encode([[c] for c in T])
 data = zip(X, T)
 
-w = np.random.randn(len(OUTPUTS), 1 + len(INPUTS)) * 0.01
+w = np.random.randn(len(OUTPUTS), len(INPUTS) + 1) * 0.01
 for i in xrange(EPOCHS):
     e = 0
     accuracy = 0
 
     for x, t in data:
-        x = np.insert(x, 0, 1.)
+        x = np.append(x, 1.)
 
         # predict, and before decoding, we'll squash the weighted values
         # with the sigmoid activation function

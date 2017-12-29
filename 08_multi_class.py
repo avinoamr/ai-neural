@@ -48,7 +48,7 @@ data = zip(X, T)
 # its own separate set of weights to be learned. So, if before we needed N + 1
 # weights, now we need Mx(1 + N) weights. Each vector represents the weights of
 # a single output neuron
-w = np.random.randn(len(OUTPUTS), 1 + len(INPUTS)) * 0.01
+w = np.random.randn(len(OUTPUTS), len(INPUTS) + 1) * 0.01
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
 
@@ -56,7 +56,7 @@ for i in xrange(EPOCHS):
     accuracy = 0
     e = 0
     for x, t in data:
-        x = np.insert(x, 0, 1.) # add the fixed bias.
+        x = np.append(x, 1.) # add the fixed bias.
 
         # instead of computing a single result y-value for the input, we now
         # have M such values - one for every possible output class. We

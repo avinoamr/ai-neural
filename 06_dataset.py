@@ -6,6 +6,7 @@
 # generate inputs and will not have access to the function we're trying to model
 # so we can't experiment with it. All we have is a list of observations:
 import numpy as np
+np.random.seed(1)
 
 # There's no f function anymore. We only have 10 observations encoded as a list
 # of inputs (X) and a list of targets (T). For a human it's super easy to pick
@@ -32,22 +33,22 @@ N = 1 # 1-dimension in the data above.
 EPOCHS = 300
 ALPHA = 0.01
 
-w = np.random.random(1 + N)
+w = np.random.random(N + 1)
 data = zip(X, T) # single data set of (x, y) tuples
 
 # instead generating a massive list here, we're just repeating the same one.
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
 
-    l = 0 # total error in this epoch
+    e = 0 # total error in this epoch
     for x, t in data:
 
         # same as before, we'll compute our prediction
-        x = np.insert(x, 0, 1.)
+        x = np.append(x, 1.)
         y = sum(x * w)
 
         # error & derivatives
-        l += (y - t) ** 2 / 2
+        e += (y - t) ** 2 / 2
         dy = (y - t)
         dw = dy * x
 
@@ -56,7 +57,7 @@ for i in xrange(EPOCHS):
 
     # instead of printing the error after every observation (which can be way
     # too verbose), we'll print out the total error for the network
-    e = e / len(data) # average the error.
+    e /= len(data) # average the error.
     print "%s: ERROR = %f" % (i, e)
 
 print

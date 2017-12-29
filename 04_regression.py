@@ -56,7 +56,7 @@ def error(y, t):
 # and immutable we learn the weights by which to multiply this input. In fact,
 # these weights can represent any linear function, so all that's left to do is
 # find these weights and we have our function approximation!
-w = np.random.random(1 + N) # 1-extra weight for the bias at index 0
+w = np.random.random(N + 1) # 1-extra weight for the bias at index 0
 for j in xrange(ITERATIONS): # can we stop early once we reach our target?
 
     # first we need a new input for each iteration. In reality, we should
@@ -74,7 +74,8 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
     #
     # thus we need to multiply all inputs with their weights, element wise, and
     # sum up the result.
-    x = np.insert(x, 0, 1.) # bias trick: inject a fixed input of 1
+    x = np.append(x, 1.) # bias trick: inject a fixed input of 1
+    # x = np.insert(x, 0, 1.)
     y = sum(w * x)
 
     # now, lets find our current error - comparing our prediction to the actual

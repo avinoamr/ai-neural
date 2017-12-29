@@ -68,11 +68,11 @@ N = 3
 ALPHA = 0.01
 ITERATIONS = 1300
 
-# same as before, weights to be learned are: [10, 8, -2, .5].
+# same as before, weights to be learned are: [8, -2, .5, 10].
 def f(X):
-    return 10 + 8 * X[0] - 2 * X[1] + X[2] / 2
+    return 8 * X[0] - 2 * X[1] + X[2] / 2 + 10
 
-w = np.random.random(1 + N)
+w = np.random.random(N + 1)
 for j in xrange(ITERATIONS):
 
     # just like before - we're assuming that these inputs were given
@@ -80,7 +80,7 @@ for j in xrange(ITERATIONS):
     t = f(x)
 
     # make our prediction based on our current weights
-    x = np.insert(x, 0, 1.)
+    x = np.append(x, 1.)
     y = sum(w * x)
 
     # compute the error
