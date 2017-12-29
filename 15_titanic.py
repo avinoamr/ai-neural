@@ -21,7 +21,7 @@ import numpy as np
 import copy
 np.random.seed(1)
 
-ALPHA = 5
+ALPHA = 1.8
 EPOCHS = 25000000
 H = 30
 INPUTS = [
@@ -136,8 +136,7 @@ for i in xrange(EPOCHS):
         # calculate accuracy
         accuracy += sum(np.argmax(ys, axis=1) == np.argmax(ts, axis=1))
 
-    e /= len(indices)
-    e = sum(e)
+    e = sum(e) / len(indices)
     print "%s: ERROR = %s (%s); ACCURACY = %d of %d" % (i, e, e - last_e, accuracy, len(indices))
 
     last_e = e
