@@ -155,7 +155,7 @@ X = "scjfyaub*"
 result = ""
 for x in OneHot(INPUTS).encode([[c] for c in X]):
     # copy-paste of the forward pass.
-    x = np.insert(x, 0, 1.)
+    x = np.append(x, 1.)
     z = np.dot(w, x)
     y = 1. / (1. + np.exp(-z))
     result += OUTPUTS[np.argmax(y)]
