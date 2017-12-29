@@ -116,7 +116,7 @@ class Layer(object):
     _last = (None, None) # input, output
 
     def __init__(self, n, m):
-        self.W = np.random.random((m, n + 1)) # +1 bias
+        self.W = np.random.randn(m, n + 1) * 0.01
 
     # forward pass is the same as before.
     def forward(self, x):

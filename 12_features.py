@@ -25,7 +25,7 @@ import numpy as np
 np.random.seed(1)
 
 ALPHA = 3
-EPOCHS = 300
+EPOCHS = 400
 H = 2 # number of hidden neurons
 
 # We'll use faux car insurance data, where we wish to predict the likelihood of
@@ -60,7 +60,7 @@ class Layer(object):
     _last = (None, None) # input, output
 
     def __init__(self, n, m):
-        self.W = np.random.random((m, n + 1)) # +1 for bias
+        self.W = np.random.randn(m, n + 1) * 0.01 # +1 for bias
 
     # forward pass is the same as before.
     def forward(self, x):

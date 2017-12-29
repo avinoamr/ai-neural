@@ -107,7 +107,7 @@ X = OneHot(INPUTS).encode([[c] for c in X])
 T = OneHot(OUTPUTS).encode([[c] for c in T])
 data = zip(X, T)
 
-w = np.zeros((len(OUTPUTS), 1 + len(INPUTS)))
+w = np.random.randn(len(OUTPUTS), 1 + len(INPUTS)) * 0.01
 for i in xrange(EPOCHS):
     e = 0
     accuracy = 0

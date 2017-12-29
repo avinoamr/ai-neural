@@ -48,7 +48,7 @@ data = zip(X, T)
 # its own separate set of weights to be learned. So, if before we needed N + 1
 # weights, now we need Mx(1 + N) weights. Each vector represents the weights of
 # a single output neuron
-w = np.random.random((len(OUTPUTS), 1 + len(INPUTS))) # add the bias weight to encoded values
+w = np.random.randn(len(OUTPUTS), 1 + len(INPUTS)) * 0.01
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
 
