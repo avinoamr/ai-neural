@@ -31,14 +31,6 @@ T = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [0.]]) # outlier last!
 # for each epoch, but in reality it's better because there's less error-
 # correction.
 #
-# NOTE that when we use fully-batched learning (BATCH = len(X)), it must be the
-# case that the avg error will go down between epochs. Otherwise, our leanring
-# rate is too high and we're oscilating or diverging. This is useful for finding
-# the right starting learning rate and ensuring that the algorithm works
-# properly. This is not the case for online (BATCH = 1) or minibatches, because
-# a single batch might contain outliers that pushes the weights in the wrong
-# direction for future batches.
-#
 # Online non-batched: BATCH = 1
 # Fully-batched:      BATCH = len(X)
 # Mini-batching:      1 < BATCH < len(x)
