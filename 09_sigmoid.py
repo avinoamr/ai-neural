@@ -91,8 +91,8 @@ EPOCHS = 100
 # character will be a class
 X = "croj dsmujlayfxjpygjtdwzbjyeoajcrojvkihjnyq*"
 T = "the quick brown fox jumps over the lazy dog!"
-INPUTS = list(set(X))
-OUTPUTS = list(set(T))
+INPUTS = sorted(list(set(X)))
+OUTPUTS = sorted(list(set(T)))
 
 class OneHot(list):
     def encode(self, data):
