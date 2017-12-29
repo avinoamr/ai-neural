@@ -21,7 +21,7 @@ ITERATIONS = 200
 def f(X):
     return sum(X)
 
-def loss(y):
+def error(y):
     return (y - T) ** 2
 
 # initial values. instead of hard coding exactly 2 inputs we'll use N values to
@@ -29,11 +29,11 @@ def loss(y):
 x = np.random.random(N) # N-sized vector of random numbers
 for j in xrange(ITERATIONS):
     y = f(x)
-    e = loss(y)
-    print "%d f(%s) = %f (LOSS: %f)" % (j, x, y, e)
+    e = error(y)
+    print "%d f(%s) = %f (ERROR: %f)" % (j, x, y, e)
 
     # N samples (instead of 2), inifinitsimal points around the current x
-    # gradient of the loss function w.r.t the input, element-wise. d is a vector
+    # gradient of the error function w.r.t the input, element-wise. d is a vector
     # with N values - corresponding to the derivate of error function w.r.t
     # every index in the inp vector.
     d = np.zeros(N)
@@ -43,10 +43,10 @@ for j in xrange(ITERATIONS):
         xtemp = np.copy(x)
         xtemp[i] += E
 
-        # sample the loss function after adding E to x[i]
-        ei = loss(f(xtemp))
+        # sample the error function after adding E to x[i]
+        ei = error(f(xtemp))
 
-        # derviative of the input - or how the loss() changes w.r.t x[i]
+        # derviative of the input - or how the error() changes w.r.t x[i]
         d[i] = (ei - e) / E
 
     # element-wise update to the new x in the gradient direction. ie:

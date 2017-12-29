@@ -87,7 +87,7 @@ class Layer(object):
 l1 = Layer(Wxh)
 l2 = Layer(Why)
 
-# predict the output and loss for the given input and target
+# predict the output and error for the given input and target
 def predict(x, t):
     h = l1.forward(X)
     y = l2.forward(h) # output from first layer is fed as input to the second
@@ -98,10 +98,10 @@ def predict(x, t):
 
 # predict the output of our single-instance training set:
 _, e = predict(X, T)
-print "LOSS %s" % sum(e) # = 0.298371
+print "ERROR %s" % sum(e) # = 0.298371
 
 # Now's the tricky bit - how do we learn the weights? Before, we've used
-# calculus to compute the derivative of the loss function w.r.t each weight. We
+# calculus to compute the derivative of the error function w.r.t each weight. We
 # can do it again here: dw = np.array([d * x for d in y - t])   But this will of
 # course only apply to the last layer, because we're disregarding the internal
 # weights and hidden state. Instead, we want to learn how every weight, in both
@@ -111,8 +111,8 @@ print "LOSS %s" % sum(e) # = 0.298371
 #
 # For now - we'll use a different approach: pertubations. This is similar to
 # what we did initially with numeric gradient descent. We will try making a tiny
-# change in each weight, and re-compute the total loss produced. The normalized
-# difference in loss will be our approximation of the derivative. While this
+# change in each weight, and re-compute the total error produced. The normalized
+# difference in error will be our approximation of the derivative. While this
 # approach is insanely ineffective for any production code, it will still be
 # useful in the future for checking that our back propoagation code was
 # implemented correctly (a process called Gradient Checking)
@@ -122,7 +122,7 @@ for w in Ws: # iterate over all weight matrices in the network
     dW = np.zeros(w.shape)
 
     # for every weight - re-run the entire network after applying a tiny change
-    # to that weight in order to measure how it affects the total loss.
+    # to that weight in order to measure how it affects the total error.
     for i in range(len(w)):
         for j in range(len(w[i])):
             w[i][j] += EPSILON # add a tiny epsilon amount to the weight

@@ -54,7 +54,7 @@ for i in xrange(EPOCHS):
 
     # we will again compute the accuracy - but this time without rounding.
     accuracy = 0
-    l = 0
+    e = 0
     for x, t in data:
         x = np.insert(x, 0, 1.) # add the fixed bias.
 
@@ -68,10 +68,10 @@ for i in xrange(EPOCHS):
         for j in xrange(len(OUTPUTS)):
             y[j] = sum(x * w[j])
 
-        # loss and derivatives
+        # error and derivatives
         # Same as before - only now we need to repeat the computation of
-        # loss and derivatives for each y-value.
-        l += (y - t) ** 2 / 2 # vector of M-losses
+        # error and derivatives for each y-value.
+        e += (y - t) ** 2 / 2 # vector of M-errors
         dy = y - t # vector of M derivatives w.r.t y, one per output value
 
         # before, out derivatives w.r.t the weights were a single vector of
@@ -96,8 +96,8 @@ for i in xrange(EPOCHS):
         # predicted class). This is done by the output decoder:
         accuracy += 1 if np.argmax(y) == np.argmax(t) else 0 # simple as that!
 
-    l = sum(l) / len(data)
-    print "%s LOSS = %f ; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
+    e = sum(e) / len(data)
+    print "%s ERROR = %f ; ACCURACY = %d of %d" % (i, e, accuracy, len(data))
 
 print
 print "W = %s" % w

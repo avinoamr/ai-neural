@@ -49,7 +49,7 @@ def f(X):
 
 # same error function as before, except that now it can't rely on a constant
 # target value T for all inputs, but instead it receives the value as input
-def loss(y, t):
+def error(y, t):
     return (y - t) ** 2
 
 # initial weights. before we've learned the input, now that the input is given
@@ -79,11 +79,11 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
 
     # now, lets find our current error - comparing our prediction to the actual
     # value produced by f():
-    e = loss(y, t)
-    print "%d: f(%s) = %f == %f (loss: %f)" % (j, x, y, t, e)
+    e = error(y, t)
+    print "%d: f(%s) = %f == %f (ERROR: %f)" % (j, x, y, t, e)
 
     # just as before, we now want to make infinitisimal changes to our weights,
-    # in order to find how the loss changes w.r.t to every individual weight.
+    # in order to find how the error changes w.r.t to every individual weight.
     # This is identical to what we did before.
     d = np.random.random(1 + N) # N derivatives - one per weight
     for i in range(1 + N):
@@ -97,9 +97,9 @@ for j in xrange(ITERATIONS): # can we stop early once we reach our target?
         # epsilon to the current weight i. Also notice that the target of our
         # error doesn't change obviously (because the input x is the same), only
         # the predition does
-        ei = loss(sum(x * wtemp), t)
+        ei = error(sum(x * wtemp), t)
 
-        # derviative of the input - or how the loss() changes w.r.t x[i]
+        # derviative of the input - or how the error() changes w.r.t x[i]
         d[i] = (ei - e) / E
 
     # now we update the weights, same as before.

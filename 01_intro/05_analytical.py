@@ -1,15 +1,15 @@
 # Our current system is able to approximate functions with hundreds or thousands
 # of inputs - but at a massive performance cost. The computation of the slope,
-# or derivative of the loss function, w.r.t every single input param. Thus, for
+# or derivative of the error function, w.r.t every single input param. Thus, for
 # each iteration, we perform O(N) probes into the f function, where N is the
 # number of parameters in the input vector[1]. This method is known as
 # numerical gradient descent. We can do better. We can compute the derivatives
-# without accessing the loss function at all! This is based on the fact that we
+# without accessing the error function at all! This is based on the fact that we
 # are currently only considering linear function with a very strictly defined
 # expression, thus we can derive that expression.
 #
 # Remember that our error function is the distance between the prediction and
-# the correct target value squared:     loss = (y - t)^2
+# the correct target value squared:     error = (y - t)^2
 #
 # We now want to find the derivatives of this function w.r.t every i in w
 # without probing the original function f for every infinitisimal change.
@@ -18,15 +18,15 @@
 #
 # First, lets determine how this function changes w.r.t changes in y. So
 # regardless of how we compute y - we want to see how its final value will
-# affect the overall loss. According to the power rule:
+# affect the overall error. According to the power rule:
 #
-#   loss'(y, t) w.r.t y = 2(y - t)
+#   error'(y, t) w.r.t y = 2(y - t)
 #
 # NOTE that in most texts, the original error function is divided by 2 (which
 # keeps it linear, and has no effect on the steepest descent) for convinience
 # while deriving, thus resulting in:
 #
-#   loss(y, t)  = (y - t)^2 / 2     => loss'(y, t) = y - t
+#   error(y, t)  = (y - t)^2 / 2     => error'(y, t) = y - t
 #
 # This is actual version we'll use going forward.
 #
@@ -43,15 +43,15 @@
 #   y'(x, w) w.r.t w[i] = x[i]
 #
 # So now we know that increasing w[i] will increase y by x[i], which will
-# increase loss by (y - t). Thus the entire derivative of the error function is
+# increase error by (y - t). Thus the entire derivative of the error function is
 # a multiplication of the two factors:
 #
-#   loss'(x) w.r.t w[i] = (y - t) * x[i]
+#   error'(x) w.r.t w[i] = (y - t) * x[i]
 #
 # The same result can be achieve more directly via the chain rule, but I wanted
 # the underlying effects to be clearer for future me.
 #
-# The implication is that we only need to compute the derivative of our loss
+# The implication is that we only need to compute the derivative of our error
 # function directly for all parameters in the input, and then multiply
 # individually by the input correspnding to each weight, using simple algebra,
 # instead of repetitive probing.
@@ -85,10 +85,10 @@ for j in xrange(ITERATIONS):
 
     # compute the error
     e = (y - t) ** 2 / 2
-    print "%d: f(%s) = %f == %f (loss: %f)" % (j, x, y, t, e)
+    print "%d: f(%s) = %f == %f (ERROR: %f)" % (j, x, y, t, e)
 
-    # now comes the big change: we compute the derivative of the loss function
-    # with respect to the output y. This gives us a sense of how the loss will
+    # now comes the big change: we compute the derivative of the error function
+    # with respect to the output y. This gives us a sense of how the error will
     # change when we change the output, element-wise.
     #
     # Recall: e = (y - t) ** 2 / 2    => de/dy = (y - t)
@@ -96,10 +96,10 @@ for j in xrange(ITERATIONS):
 
     # but what we're really after is the derivative of the error function,
     # with respect to w, in order to know in which direction to update the
-    # weights. This is built of two terms (1) how the loss is affected by the
+    # weights. This is built of two terms (1) how the error is affected by the
     # output - already computed as dy; (2) how the aforementioned output is
     # affected by the weights. Finally, we'll need to multiply these two terms
-    # to retrieve the combined effect of w on the loss function following the
+    # to retrieve the combined effect of w on the error function following the
     # chain rule.
     #
     # See the top comment for the full intuition and math. As an additional

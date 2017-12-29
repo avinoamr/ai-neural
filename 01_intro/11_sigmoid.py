@@ -5,10 +5,10 @@
 # in relative terms (ie which output value has the highest activation). Consider
 # the following example that shows the discrepency:
 #
-#   y = [-5, 5]     t = [0, 1]      loss = [25, 16]
+#   y = [-5, 5]     t = [0, 1]      error = [25, 16]
 #
-# The classes would be predicted correctly, while the loss is high. The
-# derivatives of this loss will cause y[0] to go up towards 0, and y[1] to go
+# The classes would be predicted correctly, while the error is high. The
+# derivatives of this error will cause y[0] to go up towards 0, and y[1] to go
 # down towards 1 - exactly in the opposite direction of the correct prediction.
 # This is because the range of the output is [-inf .. +inf] while the range of
 # the target is [0..1].
@@ -25,7 +25,7 @@
 # 0 for infinitely negative z, and goes towards 1 for infinitely positive z. So
 # it squashes any z value to [0..1]. So now:
 #
-#   z = [-5, 5]     sigmoid(z) = [0.006, 0.993]     t = [0, 1]  loss = [0, 0]
+#   z = [-5, 5]     sigmoid(z) = [0.006, 0.993]     t = [0, 1]  error = [0, 0]
 #
 # Much better! If anything, derivatives would stay unchanged, or get better.
 #
@@ -50,7 +50,7 @@
 #   1. It's still non-linear (below and above 0) and proven to be able to
 #       approximate any non-linear function when combined in multiple layers.
 #   2. It has the range of [0...inf] which means that it might be a bit
-#       inefficient when used with the squared difference loss function (it's
+#       inefficient when used with the squared difference error function (it's
 #       more often used with softmax/cross-entropy - possibly discussed later).
 #   3. It generates sparse activations. Because negative y values are clamped at
 #       zero, many of the neurons (the irrelevant ones that do not contribute to
@@ -113,7 +113,7 @@ inp = OneHot(list(set(X)))
 out = OneHot(list(set(T)))
 w = np.zeros((out.N, 1 + inp.N))
 for i in xrange(EPOCHS):
-    l = 0
+    e = 0
     accuracy = 0
 
     for v, target in data:
@@ -125,17 +125,17 @@ for i in xrange(EPOCHS):
         z = np.dot(w, x)
         y = 1. / (1. + np.exp(-z)) # sigmoid; in the range of [0..1]
 
-        # loss and derivatives
+        # error and derivatives
         t = out.encode(target) # encode target string to one-hot activation
-        l += (y - t) ** 2 / 2
+        e += (y - t) ** 2 / 2
         dy = y - t
 
         # now - because we've added a term to the forward pass (computing
         # the output / predicting), we need to symmetrically derive that
         # newly added expression. We need to find (1) how y changes when z
         # changes (dy/dz), and then use the chain rule to combine that
-        # affect with (2) dloss/dy to deterine how the loss changes when we
-        # change z (dE/dz). But because (2) was already computed above,
+        # affect with (2) derror/dy to deterine how the error changes when we
+        # change z (derror/dz). But because (2) was already computed above,
         # we're only left with the derivative of the sigmoid function itself
         #
         # NOTE the theme here: every expression we add to the forward
@@ -154,8 +154,8 @@ for i in xrange(EPOCHS):
         res = out.decode(y)
         accuracy += 1 if res == target else 0
 
-    l = sum(l) / len(data)
-    print "%s: LOSS = %s; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
+    e = sum(e) / len(data)
+    print "%s: ERROR = %s; ACCURACY = %d of %d" % (i, e, accuracy, len(data))
 
 # decipher another message
 X = "scjfyaub*"

@@ -11,7 +11,7 @@
 # learning a threshold line in the function where values below these threshold
 # doesn't belong to a class, and values above it do.
 import numpy as np
-# np.random.seed(1)
+np.random.seed(1)
 
 EPOCHS = 300
 ALPHA = 0.01
@@ -57,12 +57,12 @@ w = np.random.random(1 + N) # +1 for the bias.
 data = zip(X, T)
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
-    l = 0
+    e = 0
 
     # we will now also compute the accuracy as a count of how many instances in
     # the data were predicted correctly. This is a more quantitive way of
     # representing the correctness of the prediction as opposed to an arbitrary
-    # loss function
+    # error function
     accuracy = 0
 
     # mini-batches
@@ -72,8 +72,8 @@ for i in xrange(EPOCHS):
         x = np.insert(x, 0, 1.) # add the fixed bias.
         y = sum(w * x)
 
-        # compute the loss & derivatives
-        l += (y - t) ** 2 / 2
+        # error & derivatives
+        e += (y - t) ** 2 / 2
         dy = (y - t)
         dw = dy * x
 
@@ -87,8 +87,8 @@ for i in xrange(EPOCHS):
         # to trim values outside of this range, and then rounding.
         accuracy += 1 if round(np.clip(y, 0, 1)) == t else 0
 
-    l /= len(data)
-    print "%s: LOSS = %f ; ACCURACY = %d of %d" % (i, l, accuracy, len(data))
+    e /= len(data)
+    print "%s: ERROR = %f ; ACCURACY = %d of %d" % (i, e, accuracy, len(data))
 
 print
 print "W = %s" % w

@@ -27,7 +27,7 @@ N = 1 # 1-dimension in the data above.
 # just "duplicate" the data multiple times. We'll do it by iterating over the
 # data "EPOCHS" times.
 #
-# NOTE that if we're using just a few epochs (10-20), (a) the loss wouldn't
+# NOTE that if we're using just a few epochs (10-20), (a) the error wouldn't
 # converge to zero just yet, and (b) the bias wouldn't converge to 1.
 EPOCHS = 300
 ALPHA = 0.01
@@ -39,14 +39,14 @@ data = zip(X, T) # single data set of (x, y) tuples
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
 
-    l = 0 # total loss in this epoch
+    l = 0 # total error in this epoch
     for x, t in data:
 
         # same as before, we'll compute our prediction
         x = np.insert(x, 0, 1.)
         y = sum(x * w)
 
-        # compute the loss & derivatives
+        # error & derivatives
         l += (y - t) ** 2 / 2
         dy = (y - t)
         dw = dy * x
@@ -54,10 +54,10 @@ for i in xrange(EPOCHS):
         # update
         w += ALPHA * dw * -1
 
-    # instead of printing the loss after every observation (which can be way
-    # too verbose), we'll print out the total loss for the network
-    l = l / len(data) # average the loss.
-    print "%s: LOSS = %f" % (i, l)
+    # instead of printing the error after every observation (which can be way
+    # too verbose), we'll print out the total error for the network
+    e = e / len(data) # average the error.
+    print "%s: ERROR = %f" % (i, e)
 
 print
 print "W = %s" % w

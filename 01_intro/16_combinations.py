@@ -49,12 +49,11 @@
 #
 # This is proven here by choosing a completely random output for every possible
 # combination of 4 input weights - and as we'll see, it's always possible to
-# reach a loss of zero. That gives us the intuition that any arbitrarily complex
-# classification problem can be solved with hidden layers. The question that I'm
-# still unable to fully answer is why would we ever need more than 1 layer,
-# beyond the need to add different logic (CNN, RNN, dropout, softmax, etc.)
-# NOTE that this code should never be used in reality. It's only here for
-# experimental & educational purposes.
+# reach an error of zero. That gives us the intuition that any arbitrarily
+# complex classification problem can be solved with hidden layers. The question
+# that I'm still unable to fully answer is why would we ever need more than 1
+# layer, beyond the need to add different logic (CNN, RNN, dropout, softmax,
+# etc.)
 #
 # That's obviously inefficient (16 Inputs => 65,536 hidden neurons). In fact,
 # most real-life cases will not have nearly as many samples in the training data
@@ -108,7 +107,7 @@ X = np.array([
 ])
 
 # random output - there's no intelligence here, but with 2^N hidden neurons
-# we'll always be able to fully eliminate the loss.
+# we'll always be able to fully eliminate the error.
 T = np.random.choice([0., 1.], len(X))
 
 # Layer represents a single neural network layer of weights
@@ -133,11 +132,11 @@ class Layer(object):
     def backward(self, dy):
         x, y = self._last
 
-        # how the weights affect total loss (derivative w.r.t w)
+        # how the weights affect total error (derivative w.r.t w)
         dz = dy * (y * (1 - y))
         dw = np.array([d * x for d in dz])
 
-        # how the input (out of previous layer) affect total loss (derivative
+        # how the input (out of previous layer) affect total error (derivative
         # w.r.t x). Derivates of the reverse of the forward pass.
         dx = np.dot(dz, self.W)
         dx = np.delete(dx, -1) # remove the bias input derivative
@@ -167,4 +166,4 @@ for i in xrange(EPOCHS):
         _, d = l1.backward(d)
 
     e /= len(data)
-    print "%s: LOSS = %s" % (i, sum(e))
+    print "%s: ERROR = %s" % (i, sum(e))

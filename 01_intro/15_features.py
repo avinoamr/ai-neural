@@ -11,7 +11,7 @@
 # non-linear function as shown in (1). But in classification, we can think of
 # the output of the hidden layer as a set of new features dataset that's fed
 # into the final layer and thus the whole purpose of the hidden layer is to find
-# the features that are most relevant for decreasing the loss. In other words,
+# the features that are most relevant for decreasing the error. In other words,
 # it needs to pick the features that are most interesting/relevant for the
 # prediction, using any combination of the input features.
 #
@@ -76,11 +76,11 @@ class Layer(object):
     def backward(self, dy):
         x, y = self._last
 
-        # how the weights affect total loss (derivative w.r.t w)
+        # how the weights affect total error (derivative w.r.t w)
         dz = dy * (y * (1 - y))
         dw = np.array([d * x for d in dz])
 
-        # how the input (out of previous layer) affect total loss (derivative
+        # how the input (out of previous layer) affect total error (derivative
         # w.r.t x). Derivates of the reverse of the forward pass.
         dx = np.dot(dz, self.W)
         dx = np.delete(dx, -1) # remove the bias input derivative
@@ -107,7 +107,7 @@ for i in xrange(EPOCHS):
         _, d = l1.backward(d)
 
     e /= len(data)
-    print "%s: LOSS = %s" % (i, sum(e))
+    print "%s: ERROR = %s" % (i, sum(e))
 
 print
 

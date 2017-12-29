@@ -87,13 +87,13 @@ class Layer(object):
             x = xs[i]
             y = ys[i]
 
-            # how the weights affect total loss (derivative w.r.t w)
+            # how the weights affect total error (derivative w.r.t w)
             dz = dy * (y * (1 - y))
             dw = np.array([d * x for d in dz])
             dws[i] = dw
 
-            # how the input (out of previous layer) affect total loss (derivative
-            # w.r.t x). Derivates of the reverse of the forward pass.
+            # how the input (out of previous layer) affect total error
+            # (derivative w.r.t x). Derivates of the reverse of the forward pass
             dx = np.dot(dz, self.W)
             dx = np.delete(dx, -1) # remove the bias input derivative
             dxs[i] = dx
@@ -112,11 +112,11 @@ l1 = Layer(len(INPUTS), H)
 l2 = Layer(H, len(OUTPUTS))
 indices = range(len(X))
 
-last_l = float('inf')
+last_e = float('inf')
 for i in xrange(EPOCHS):
     np.random.shuffle(indices)
-    l = 0
 
+    e = 0
     accuracy = 0
     for j in xrange(0, len(indices), BATCH):
         minib = indices[j:j+BATCH]
@@ -128,7 +128,7 @@ for i in xrange(EPOCHS):
         ys = l2.forward(hs)
 
         # backward
-        l += sum((ys - ts) ** 2 / 2)
+        e += sum((ys - ts) ** 2 / 2)
         dys = ys - ts
         dhs = l2.backward(dys)
         dxs = l1.backward(dhs)
@@ -136,11 +136,11 @@ for i in xrange(EPOCHS):
         # calculate accuracy
         accuracy += sum(np.argmax(ys, axis=1) == np.argmax(ts, axis=1))
 
-    l /= len(indices)
-    l = sum(l)
-    print "%s: LOSS = %s (%s); ACCURACY = %d of %d" % (i, l, l - last_l, accuracy, len(indices))
+    e /= len(indices)
+    e = sum(e)
+    print "%s: ERROR = %s (%s); ACCURACY = %d of %d" % (i, e, e - last_e, accuracy, len(indices))
 
-    last_l = l
+    last_e = e
 
 print
 print "W = %s" % l1.W

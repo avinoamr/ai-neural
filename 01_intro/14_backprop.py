@@ -60,7 +60,7 @@ class Layer(object):
         # pass. So for every mathematical operation in the forward pass, we need
         # the respective derivative in this backward pass. This is exactly like
         # what we've done before except that now we don't need to also compute
-        # the derivative of the total loss of each of our output neurons - it's
+        # the derivative of the total error of each of our output neurons - it's
         # given as the input to this layer from the next layer. This is exactly
         # the same as before, except that we receive dy as input, instead of
         # computing it here.
@@ -108,16 +108,16 @@ class Layer(object):
         # All that's left to do is chain these two terms together.
         #
         # NOTE Same as: dx = np.dot(dz, dz_dx)
-        dx = np.zeros(len(x)) # our result - derivative of total loss w.r.t x
+        dx = np.zeros(len(x)) # our result - derivative of total error w.r.t x
         for i in xrange(len(y)):
-            # this y[i] affects the total loss by dy[i]. We know that. Now we
+            # this y[i] affects the total error by dy[i]. We know that. Now we
             # need to compute how each input affects this y. This was computed
             # before as dy_dx[i] - a 1xN matrix showing us the effect of each
             # input on this y. So we just need to chain these terms together, to
             # get the effect of each input on the total error. NOTE that as each
             # output i is affected by all inputs, we need to sum up these
-            # effects per input to get the derivative of the total loss for each
-            # individual input
+            # effects per input to get the derivative of the total error for
+            # each individual input
             dx += dz[i] * dz_dx[i]
 
         # update
@@ -138,15 +138,16 @@ y = l2.forward(h) # output from first layer is fed as input to the second
 
 # now compute our error, same as before
 e = (y - T) ** 2 /2
-print "LOSS %s" % sum(e) # =  0.298371
+print "ERROR %s" % sum(e) # =  0.298371
 
 # backward-pass
 #
 # Now we want to walk backwards and compute the derivatives of the total error
 # w.r.t every weight in both layers. In other words, we want to know how every
-# weight affects the loss function. There are several ways to go about that. One
-# option is to use pertubations: basically attempt to change one weight at a
-# time and measure what effect it had to the total loss. This is similar to our
+# weight affects the error function. There are several ways to go about that.
+#
+# One option is to use pertubations: basically attempt to change one weight at a
+# time and measure what effect it had to the total error. This is similar to our
 # initial numeric gradient descent. The Back Propogation algorithm is much
 # faster - it allows us to learn all of the derivatives using math all at once.
 #
@@ -156,10 +157,10 @@ print "LOSS %s" % sum(e) # =  0.298371
 # operations. The only part that's missing is knowing how it's final output
 # affected the final error on all future layers, without having any knowledge
 # about the math or weights used on these layers. This is solved by propagating
-# these output derivatives backwards - starting from the final loss derivative
+# these output derivatives backwards - starting from the final error derivative
 # and allowing each layer to finally feed the derivatives of its inputs to the
 # layer below.
-d = y - T # start loss derivative at the top error layer. Same as before.
+d = y - T # start error derivative at the top error layer. Same as before.
 d = l2.backward(d)
 _ = l1.backward(d)
 

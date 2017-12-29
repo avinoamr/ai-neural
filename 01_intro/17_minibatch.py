@@ -15,7 +15,7 @@ EPOCHS = 200
 
 # In this simple example, we'll use a single binary weight. Our target will be
 # the same as the input, except that we'll have an outlier: the last instance
-# returns a wrong value. NOTE that obviously it means that a perfect loss of
+# returns a wrong value. NOTE that obviously it means that a perfect error of
 # zero cannot be obtained, but still the network should learn the correlation.
 X = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [1.]])
 T = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [0.]]) # outlier last!
@@ -32,7 +32,7 @@ T = np.array([[0.], [0.], [1.], [1.], [0.], [0.], [1.], [0.]]) # outlier last!
 # correction.
 #
 # NOTE that when we use fully-batched learning (BATCH = len(X)), it must be the
-# case that the avg loss will go down between epochs. Otherwise, our leanring
+# case that the avg error will go down between epochs. Otherwise, our leanring
 # rate is too high and we're oscilating or diverging. This is useful for finding
 # the right starting learning rate and ensuring that the algorithm works
 # properly. This is not the case for online (BATCH = 1) or minibatches, because
@@ -86,13 +86,13 @@ class Layer(object):
             x = xs[i]
             y = ys[i]
 
-            # how the weights affect total loss (derivative w.r.t w)
+            # how the weights affect total error (derivative w.r.t w)
             dz = dy * (y * (1 - y))
             dw = np.array([d * x for d in dz])
             dws[i] = dw
 
-            # how the input (out of previous layer) affect total loss (derivative
-            # w.r.t x). Derivates of the reverse of the forward pass.
+            # how the input (out of previous layer) affect total error
+            # (derivative w.r.t x). Derivates of the reverse of the forward pass
             dx = np.dot(dz, self.W)
             dx = np.delete(dx, -1) # remove the bias input derivative
             dxs[i] = dx
@@ -123,4 +123,4 @@ for i in xrange(EPOCHS):
         l.backward(dys)
 
     e /= len(X)
-    print "%s: LOSS = %s" % (i, sum(e))
+    print "%s: ERROR = %s" % (i, sum(e))
