@@ -152,14 +152,13 @@ for i in xrange(EPOCHS):
 
 # decipher another message
 X = "scjfyaub*"
-encoding = OneHot(INPUTS)
 result = ""
-for x in encoding.encode([[c] for c in X]):
+for x in OneHot(INPUTS).encode([[c] for c in X]):
     # copy-paste of the forward pass.
     x = np.insert(x, 0, 1.)
     z = np.dot(w, x)
     y = 1. / (1. + np.exp(-z))
-    result += encoding[np.argmax(y)]
+    result += OUTPUTS[np.argmax(y)]
 
 print
 print X + " = " + result
