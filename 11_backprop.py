@@ -167,7 +167,16 @@ _ = l1.backward(d)
 # print the updated weights. NOTE that we can check our math by comparing the
 # weights from the back-prop algorithm with the results we received before with
 # pertubations. This is known as gradient checking.
-print "l1.W ="
-print l1.W # = (0.149780, 0.199561, 0.345614), (0.249751, 0.299502, 0.345022)
-print "l2.W ="
-print l2.W # = (0.358916, 0.408666, 0.530751), (0.511300, 0.561369, 0.619047)
+print
+print "l1.W Correct? = %s" % np.allclose(l1.W, [
+    [0.149780, 0.199561, 0.345614],
+    [0.249751, 0.299502, 0.345022]
+])
+print l1.W
+
+print
+print "l2.W Correct? = %s" % np.allclose(l2.W, [
+    [0.358916, 0.408666, 0.530751],
+    [0.511300, 0.561369, 0.619047]
+])
+print l2.W
