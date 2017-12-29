@@ -80,7 +80,7 @@ class Layer(object):
     def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
         z = np.dot(self.W, x) # derivate: x
-        y = 1. / (1. + np.exp(-z)) # sigmoid non-linear activation
+        y = np.tanh(z) # tanh non-linear activation
         return y
 
 # now lets create our two layers with the weights we've created before:
@@ -139,14 +139,14 @@ for W, dW in zip(Ws, dWs):
 # print the updated weights
 print
 print "l1.W Correct? = %s" % np.allclose(l1.W, [
-    [0.149780, 0.199561, 0.345614],
-    [0.249751, 0.299502, 0.345022]
+    [0.148130, 0.196260, 0.312602],
+    [0.247892, 0.295784, 0.307847]
 ])
 print l1.W
 
 print
 print "l2.W Correct? = %s" % np.allclose(l2.W, [
-    [0.358916, 0.408666, 0.530751],
-    [0.511300, 0.561369, 0.619047]
+    [0.338580, 0.386369, 0.429644],
+    [0.518139, 0.568792, 0.650312]
 ])
 print l2.W
