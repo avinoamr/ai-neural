@@ -66,34 +66,23 @@ class Layer(object):
         self.W = np.random.randn(m, n + 1) * 0.01
 
     # forward pass
-    # now accepts a list of BATCH inputs, xs - one per test case - each with N
-    # values - one per input neuron. Computes a list of BATCH outputs, ys.
     def forward(self, xs):
-
-        # add the bias in one go to all of the data by creating a new vector of
-        # 1s and then concatenating it with the input xs.
-        bias = np.ones((xs.shape[0], 1)) # can be a constant
+        bias = np.ones((xs.shape[0], 1))
         xs = np.concatenate((xs, bias), axis=1)
-
-        # BATCH x M outputs
         ys = np.zeros((len(xs), self.M))
         for i, x in enumerate(xs):
-            z = np.dot(self.W, x) # derivate: x
-            y = 1. / (1. + np.exp(-z)) # derivate: y(1 - y)
+            z = np.dot(self.W, x)
+            y = 1. / (1. + np.exp(-z))
             ys[i] = y
 
         self._last = xs, ys
         return ys
 
     # backward pass
-    # now accepts a list of BATCH dys - one per test case - each with M values -
-    # one per output neuron. Computes the average dw for all of these cases and
-    # updates once for that average. It also returns a list of BATCH dxs for
-    # backprop.
     def backward(self, dys):
         xs, ys = self._last
-        dxs = np.zeros((len(dys), self.N)) # BATCH x N input derivatives
-        dws = np.zeros((len(dys),) + self.W.shape) # BATCH x N+1 weight derivatives
+        dxs = np.zeros((len(dys), self.N))
+        dws = np.zeros((len(dys),) + self.W.shape)
         for i, dy in enumerate(dys):
             x = xs[i]
             y = ys[i]
