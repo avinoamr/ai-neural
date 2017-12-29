@@ -91,33 +91,28 @@ EPOCHS = 100
 # character will be a class
 X = "croj dsmujlayfxjpygjtdwzbjyeoajcrojvkihjnyq*"
 T = "the quick brown fox jumps over the lazy dog!"
-data = zip(X, T)
+INPUTS = list(set(X))
+OUTPUTS = list(set(T))
 
-class OneHot(object):
-    def __init__(self, alphabet):
-        self.alphabet = alphabet
-        self.N = len(alphabet)
-
-    def encode(self, v):
-        x = np.zeros(self.N)
-        idx = self.alphabet.index(v)
-        x[idx] = 1.
+class OneHot(list):
+    def encode(self, data):
+        x = np.zeros((len(data), len(self)))
+        for i, vs in enumerate(data):
+            indices = [self.index(v) for v in sorted(vs)]
+            x[i][indices] = 1.
         return x
 
-    def decode(self, y):
-        return self.alphabet[np.argmax(y)]
-
-
 # initialize & learn
-inp = OneHot(list(set(X)))
-out = OneHot(list(set(T)))
-w = np.zeros((out.N, 1 + inp.N))
+X = OneHot(INPUTS).encode([[c] for c in X])
+T = OneHot(OUTPUTS).encode([[c] for c in T])
+data = zip(X, T)
+
+w = np.zeros((len(OUTPUTS), 1 + len(INPUTS)))
 for i in xrange(EPOCHS):
     e = 0
     accuracy = 0
 
-    for v, target in data:
-        x = inp.encode(v)
+    for x, t in data:
         x = np.insert(x, 0, 1.)
 
         # predict, and before decoding, we'll squash the weighted values
@@ -126,7 +121,6 @@ for i in xrange(EPOCHS):
         y = 1. / (1. + np.exp(-z)) # sigmoid; in the range of [0..1]
 
         # error and derivatives
-        t = out.encode(target) # encode target string to one-hot activation
         e += (y - t) ** 2 / 2
         dy = y - t
 
@@ -151,22 +145,21 @@ for i in xrange(EPOCHS):
         w += ALPHA * -dw
 
         # decode the predicted value to determine equality/accuracy
-        res = out.decode(y)
-        accuracy += 1 if res == target else 0
+        accuracy += 1 if np.argmax(y) == np.argmax(t) else 0
 
     e = sum(e) / len(data)
     print "%s: ERROR = %s; ACCURACY = %d of %d" % (i, e, accuracy, len(data))
 
 # decipher another message
 X = "scjfyaub*"
+encoding = OneHot(INPUTS)
 result = ""
-for v in X:
+for x in encoding.encode([[c] for c in X]):
     # copy-paste of the forward pass.
-    x = inp.encode(v)
     x = np.insert(x, 0, 1.)
     z = np.dot(w, x)
     y = 1. / (1. + np.exp(-z))
-    result += out.decode(y)
+    result += encoding[np.argmax(y)]
 
 print
 print X + " = " + result
