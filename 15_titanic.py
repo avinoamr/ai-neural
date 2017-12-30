@@ -21,7 +21,7 @@ import numpy as np
 import copy
 np.random.seed(1)
 
-ALPHA = 1.8
+ALPHA = 0.5
 EPOCHS = 25000000
 H = 30
 INPUTS = [
@@ -72,7 +72,7 @@ class Layer(object):
         ys = np.zeros((len(xs), self.M))
         for i, x in enumerate(xs):
             z = np.dot(self.W, x)
-            y = 1. / (1. + np.exp(-z))
+            y = np.tanh(z)
             ys[i] = y
 
         self._last = xs, ys
@@ -88,7 +88,7 @@ class Layer(object):
             y = ys[i]
 
             # how the weights affect total error (derivative w.r.t w)
-            dz = dy * (y * (1 - y))
+            dz = dy * (1 - y ** 2)
             dw = np.array([d * x for d in dz])
             dws[i] = dw
 
