@@ -24,7 +24,7 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 3
+ALPHA = 0.5
 EPOCHS = 400
 H = 2 # number of hidden neurons
 
@@ -60,13 +60,13 @@ class Layer(object):
     _last = (None, None) # input, output
 
     def __init__(self, n, m):
-        self.W = np.random.randn(m, n + 1) * 0.01 # +1 for bias
+        self.W = np.random.randn(m, n + 1)
 
     # forward pass is the same as before.
     def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
         z = np.dot(self.W, x) # derivate: x
-        y = 1. / (1. + np.exp(-z)) # derivate: y(1 - y)
+        y = np.tanh(z)
 
         self._last = x, y
         return y
@@ -77,7 +77,7 @@ class Layer(object):
         x, y = self._last
 
         # how the weights affect total error (derivative w.r.t w)
-        dz = dy * (y * (1 - y))
+        dz = dy * (1 - y ** 2)
         dw = np.array([d * x for d in dz])
 
         # how the input (out of previous layer) affect total error (derivative
