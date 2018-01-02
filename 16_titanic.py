@@ -36,7 +36,7 @@ OUTPUTS = ["0", "1"]
 
 # read the data from the CSV file and break the data into an input and output
 # sets, each is a list of (k,v) tuples
-data = [d for d in csv.DictReader(open("15_titanic.csv"))]
+data = [d for d in csv.DictReader(open("16_titanic.csv"))]
 T = [[d.pop("Survived")] for d in data]
 X = [d.items() for d in data]
 
