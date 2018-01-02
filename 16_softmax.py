@@ -139,13 +139,13 @@ for i in xrange(EPOCHS):
         # positives) - but due to softmaxing it's increasingly impossible
         # because we forced the values to sum to 1. Every increase in the
         # correct value will always mean a large decrease in the incorrect
-        # values. In other words, we only care about the loss of the correct
-        # prediction, as it will force all of the incorrect ones into place.
+        # values. In other words, we only care about the loss of the target
+        # prediction, as it will force all of the other ones into place.
         #
         # [1] https://www.wolframalpha.com/input/?i=-log(x)
         e += sum(ts * -np.log(ps))
 
-        # now for the derivatives. We've added two expressions that we need to
+        # Now for the derivatives. We've added two expressions that we need to
         # derive: the softmax function and the cross-entropy error function. I
         # will not cover the entire derivation process here, as it's way too
         # lengthy[2], but it turns out that the chained derivative of both the
@@ -157,7 +157,7 @@ for i in xrange(EPOCHS):
         # and now, backwards:
         l1.backward(dy)
 
-        # instead of accuracy, we'll now measure the average distribution
+        # instead of accuracy, we'll now measure the distribution
         dist += ps
 
     dist = sum(dist) / len(indices) # average out the probablity distribution
