@@ -102,7 +102,20 @@ for i in xrange(EPOCHS):
         # arbitrary values we used until now to one where the sum of all of the
         # values add up to 1. This is obviously required for representing
         # probablistic distribution of possibilities, as the total has to be
-        # 100% (or 1). For example:
+        # 100% (or 1):
+        #
+        #   softmax(X) = exp(X) / sum(exp(X))
+        #
+        # This function has several important properties: (a) it maintains the
+        # relative sizes of the different values, thus it's a generalization of
+        # the previous example. It also means that we can still use the max
+        # value to predict the most likely result similar to how it was done
+        # beforehand. (b) it sums to 1, which makes it kind of a zero-sum game,
+        # as we increase one of the values, we have to decrease all others. A
+        # fact that will be useful later when we look at the error and
+        # derivatives. (c) it computes the log probablities, rather than the
+        # flat probabilities such that the differences between become more
+        # emphasied. For example:
         #
         #   y = [1., 2., 3., 4.]                =>
         #   p = [0.032, 0.087, 0.237, 0.644]    =>
@@ -112,12 +125,7 @@ for i in xrange(EPOCHS):
         # neural networks due to the fact that the largest activation inhibits
         # the other lesser activations, by the fact that we find the log
         # probablities rather than just standard normalization.
-        #
-        # Derivative: y[i] * (1 - y[i])
-        ps = np.zeros((len(ys), 2))
-        for j in range(len(ys)):
-            p = np.exp(ys[j]) / np.sum(np.exp(ys[j]))
-            ps[j] = p
+        ps = np.exp(ys) / np.sum(np.exp(ys), axis=1, keepdims=True)
 
         # error & derivative
         # For the first time we're introducing a different error function: the
