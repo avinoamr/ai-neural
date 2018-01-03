@@ -30,8 +30,8 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 1
-EPOCHS = 85
+ALPHA = 0.1
+EPOCHS = 400
 
 # we'll use the same data as in the softmax exercise, and you'll notice that we
 # achieve a more accurate distribution using less than half of the epochs.
@@ -52,7 +52,7 @@ T = np.array([[1., 0.], [1., 0.], [1., 0.], [1., 0.], [0., 1.]])
 # Online non-batched: BATCH = 1
 # Fully-batched:      BATCH = len(X)
 # Mini-batching:      1 < BATCH < len(x)
-BATCH = len(X)
+BATCH = 3
 
 # Layer represents a single neural network layer of weights
 class Layer(object):
@@ -117,7 +117,7 @@ for i in xrange(EPOCHS):
     np.random.shuffle(indices) # shuffle the list of different ordering
 
     e = 0.
-    dist = 0.
+    dist = 0
     for j in xrange(0, len(indices), BATCH):
         # choose the BATCH indices in the data (X, T) to be used in this mini-
         # batch
@@ -135,8 +135,12 @@ for i in xrange(EPOCHS):
         l.backward(dys)
 
         # compute the distribution
-        dist += ps
+        dist += sum(ps)
 
-    dist = sum(dist) / len(X) # average out the probablity distribution
+    dist /= len(X) # average out the probablity distribution
     e = sum(e) / len(X)
-    print "%s: ERROR = %s ; DIST = %s" % (i, e, dist)
+
+    xs = np.array([[1.]])
+    ys = l.forward(xs)
+    ps = np.exp(ys) / np.sum(np.exp(ys), axis=1, keepdims=True) # softmax
+    print "%s: ERROR = %s ; DIST = %s" % (i, e, ps[0])

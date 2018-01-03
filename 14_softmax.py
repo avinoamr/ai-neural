@@ -34,7 +34,7 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 0.01
+ALPHA = 0.1
 EPOCHS = 400
 
 # in our new data, regardless of the input, the target is almost always 1. But,
