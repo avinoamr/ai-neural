@@ -117,7 +117,7 @@ for i in xrange(EPOCHS):
     np.random.shuffle(indices) # shuffle the list of different ordering
 
     e = 0.
-    dist = 0
+    dist = None
     for j in xrange(0, len(indices), BATCH):
         # choose the BATCH indices in the data (X, T) to be used in this mini-
         # batch
@@ -134,13 +134,10 @@ for i in xrange(EPOCHS):
         dys = ps - ts
         l.backward(dys)
 
-        # compute the distribution
-        dist += sum(ps)
+        # remember the just one of the distribution we've receive for tracking
+        # over time. Because the input is always constant, it doesn't really
+        # matter which one we choose.
+        dist = ps[0]
 
-    dist /= len(X) # average out the probablity distribution
     e = sum(e) / len(X)
-
-    xs = np.array([[1.]])
-    ys = l.forward(xs)
-    ps = np.exp(ys) / np.sum(np.exp(ys), axis=1, keepdims=True) # softmax
-    print "%s: ERROR = %s ; DIST = %s" % (i, e, ps[0])
+    print "%s: ERROR = %s ; DIST = %s" % (i, e, dist)
