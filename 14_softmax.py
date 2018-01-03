@@ -1,13 +1,24 @@
 # Finding that final prediction, while useful, may prove insufficient - because
-# it hides away every other outcome except for the one most likely. Imagine a
-# case when the output is equally likely to be in two classes. Our current model
-# will just pick the one that's marginally more likely (51% vs 49%), thus
-# eliminating any occurances of the other. The predicted value will always be
-# the same (100% vs 0%). For example, in visual recognition, a picture might
-# contain multiple objects, and we wish to know all of these objects (along with
-# their prominence in the image). Another example in visual recognition is that
-# our model might confuse a cheetah and a giraffe, and we wish to know the
-# likelihood of each option. Instead, we prefer to have a probablistic output -
+# it hides away every other outcome except for the one most likely one. In real
+# life data, there will rarely be a direct perfect correlation between the input
+# and output. Usually there will be some "noise" in the data, some outliers that
+# doesn't fit perfectly. This is because it can be assumed that the inputs
+# doesn't capture every possible feature in the problem domain. For example, if
+# our inputs represent the number of items purchased, and the target output
+# represents the cost of these items, it's possible to have outliers where the
+# data doesn't fit perfectly, due to special promotions, sales, surges,
+# negotiations, etc. that are not captured in the data inputs.
+#
+# Imagine the other case when the output is equally likely to be in two classes.
+# Our current model will just pick the one that's marginally more likely (51% vs
+# 49%), thus eliminating any occurances of the other. The predicted value will
+# always be the same (100% vs 0%). For example, in visual recognition, a picture
+# might contain multiple objects, and we wish to know all of these objects
+# (along with their prominence in the image). Another example in visual
+# recognition is that our model might confuse a cheetah and a giraffe, and we
+# wish to know the likelihood of each option.
+#
+# Instead of our current model, we prefer to have a probablistic output -
 # one that captures the statistical likelihood of the input to fit within each
 # class, in order to (a) allow ourselves to manually examine all of the
 # possibilities, or maybe a few of the top ones, and (b) perhaps even
@@ -23,17 +34,17 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 0.5
-EPOCHS = 180
-BATCH = 100 # large enough to be one-batch
+ALPHA = 0.01
+EPOCHS = 400
 
 # in our new data, regardless of the input, the target is almost always 1. But,
 # in a fifth of the cases output is turned off. Out goal is that our final
 # output woudln't just be the most likely prediction (in this case - 1), but
 # instead will show the 80%/20% probablity distribution of these outputs. So
 # when we want our output to be [0.8, 0.2]
-X = np.array([[1.],     [1.],     [1.],      [1.],     [1.]])
-T = np.array([[1., 0.], [1., 0.], [0., 1.0], [1., 0.], [1., 0.]])
+X = np.array([[1.],     [1.],     [1.],     [1.],     [1.]])
+T = np.array([[1., 0.], [1., 0.], [1., 0.], [1., 0.], [0., 1.]])
+#                                                      ^^ outlier
 
 # Layer represents a single neural network layer of weights
 class Layer(object):
@@ -41,64 +52,49 @@ class Layer(object):
     _last = (None, None) # input, output
 
     def __init__(self, n, m):
-        self.N, self.M = n, m
-        self.W = np.random.randn(m, n + 1) * 0.01
+        self.W = np.random.randn(m, n + 1)
 
-    # forward pass
-    def forward(self, xs):
-        bias = np.ones((xs.shape[0], 1))
-        xs = np.concatenate((xs, bias), axis=1)
-        ys = np.zeros((len(xs), self.M))
-        for i, x in enumerate(xs):
-            z = np.dot(self.W, x)
-            y = np.tanh(z)
-            ys[i] = y
+    # forward pass is the same as before.
+    def forward(self, x):
+        x = np.append(x, 1.) # add the fixed input for bias
+        z = np.dot(self.W, x) # derivate: x
+        y = np.tanh(z)
 
-        self._last = xs, ys
-        return ys
+        self._last = x, y
+        return y
 
-    # backward pass
-    def backward(self, dys):
-        xs, ys = self._last
-        dxs = np.zeros((len(dys), self.N))
-        dws = np.zeros((len(dys),) + self.W.shape)
-        for i, dy in enumerate(dys):
-            x = xs[i]
-            y = ys[i]
+    # backward pass - compute the derivatives of each weight in this layer and
+    # update them.
+    def backward(self, dy):
+        x, y = self._last
 
-            # how the weights affect total error (derivative w.r.t w)
-            dz = dy * (1 - y ** 2)
-            dw = np.array([d * x for d in dz])
-            dws[i] = dw
+        # how the weights affect total error (derivative w.r.t w)
+        dz = dy * (1 - y ** 2)
+        dw = np.array([d * x for d in dz])
 
-            # how the input (out of previous layer) affect total error
-            # (derivative w.r.t x). Derivates of the reverse of the forward pass
-            dx = np.dot(dz, self.W)
-            dx = np.delete(dx, -1) # remove the bias input derivative
-            dxs[i] = dx
+        # how the input (out of previous layer) affect total error (derivative
+        # w.r.t x). Derivates of the reverse of the forward pass.
+        dx = np.dot(dz, self.W)
+        dx = np.delete(dx, -1) # remove the bias input derivative
 
         # update
-        dw = sum(dws) / len(dws) # average out the weight derivatives
         self.W -= ALPHA * dw
-        return dxs
+        return dw, dx
 
 l1 = Layer(1, 2)
-indices = range(len(X))
+data = zip(X, T)
 for i in xrange(EPOCHS):
-    np.random.shuffle(indices)
+    np.random.shuffle(data)
 
     e = 0.
     dist = 0.
-    for j in xrange(0, len(indices), BATCH):
-        minib = indices[j:j+BATCH]
-        xs = X[minib]
-        ts = T[minib]
+    for x, t in data:
 
         # forward
-        ys = l1.forward(xs)
+        y = l1.forward(x)
 
         # softmax
-        # this step (often implemented as a separate hidden layer) squashes the
+        # this step (often implemented as a separate final layer) squashes the
         # arbitrary values we used until now to one where the sum of all of the
         # values add up to 1. This is obviously required for representing
         # probablistic distribution of possibilities, as the total has to be
@@ -125,7 +121,7 @@ for i in xrange(EPOCHS):
         # neural networks due to the fact that the largest activation inhibits
         # the other lesser activations, by the fact that we find the log
         # probablities rather than just standard normalization.
-        ps = np.exp(ys) / np.sum(np.exp(ys), axis=1, keepdims=True)
+        p = np.exp(y) / np.sum(np.exp(y))
 
         # error & derivative
         # For the first time we're introducing a different error function: the
@@ -151,7 +147,7 @@ for i in xrange(EPOCHS):
         # prediction, as it will force all of the other ones into place.
         #
         # [1] https://www.wolframalpha.com/input/?i=-log(x)
-        e += sum(ts * -np.log(ps))
+        e += sum(t * -np.log(p))
 
         # Now for the derivatives. We've added two expressions that we need to
         # derive: the softmax function and the cross-entropy error function. I
@@ -160,14 +156,14 @@ for i in xrange(EPOCHS):
         # cross-entropy error function and the softmax function is: p - t
         #
         # [2] https://deepnotes.io/softmax-crossentropy
-        dy = ps - ts
+        dy = p - t
 
         # and now, backwards:
         l1.backward(dy)
 
         # instead of accuracy, we'll now measure the distribution
-        dist += ps
+        dist += p
 
-    dist = sum(dist) / len(indices) # average out the probablity distribution
-    e = sum(e) / len(indices) # average out the error
+    dist /= len(data) # average out the probablity distribution
+    e /= len(data) # average out the error
     print "%s: ERROR = %s ; DISTRIBUTION = %s" % (i, e, dist)
