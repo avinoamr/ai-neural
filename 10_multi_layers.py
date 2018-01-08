@@ -72,7 +72,7 @@ Why = np.array([[.40, .45, .60], [.50, .55, .60]]) # hidden to output
 
 # In order to avoid code repetition for each weights matrix, we'll use a Layer
 # class to implement the prediction and derivatives:
-class Layer(object):
+class TanH(object):
     def __init__(self, w):
         self.W = w
 
@@ -83,22 +83,27 @@ class Layer(object):
         y = np.tanh(z) # tanh non-linear activation
         return y
 
+# We will also use a separate, final error layer. This will make our network
+# structure more generic, by embedding the error calculation into a layer of its
+# own.
+class SquaredError(object):
+    def forward(self, x):
+        # squared error layer doesn't modify the output. We will see other error
+        # functions that do modify the output (Softmax, for example).
+        self._y = x
+        return x
+
+    # error layers receive the target vector and returns the error and
+    # derivative of the error
+    def backward(self, t):
+        y = self._y
+        return (y - t) ** 2 / 2, y - t
+
 # now lets create our two layers with the weights we've created before:
-l1 = Layer(Wxh)
-l2 = Layer(Why)
-
-# predict the output and error for the given input and target
-def predict(x, t):
-    h = l1.forward(X)
-    y = l2.forward(h) # output from first layer is fed as input to the second
-
-    # now compute our error, same as before
-    e = (y - t) ** 2 /2
-    return y, e
-
-# predict the output of our single-instance training set:
-_, e = predict(X, T)
-print "ERROR %s" % sum(e) # = 0.298371
+l1 = TanH(Wxh)
+l2 = TanH(Why)
+l3 = SquaredError()
+layers = [l1, l2, l3]
 
 # Now's the tricky bit - how do we learn the weights? Before, we've used
 # calculus to compute the derivative of the error function w.r.t each weight. We
@@ -116,25 +121,49 @@ print "ERROR %s" % sum(e) # = 0.298371
 # approach is insanely ineffective for any production code, it will still be
 # useful in the future for checking that our back propoagation code was
 # implemented correctly (a process called Gradient Checking)
-Ws = [l1.W, l2.W] # all of the weights in the network
-dWs = [] # derivatives of all weights in both layers.
-for w in Ws: # iterate over all weight matrices in the network
-    dW = np.zeros(w.shape)
+#
+# NOTE this function can be used for gradients checks whenever the provided
+# layers adhere to the conventional API for forward() and backward()
+def gradients(layers, x, t, epsilon = 0.0001):
+    # compute the error of the given x, t
+    last = layers[len(layers) - 1]
+    y = reduce(lambda x, l: l.forward(x), layers, x)
+    e, _ = last.backward(t)
 
-    # for every weight - re-run the entire network after applying a tiny change
-    # to that weight in order to measure how it affects the total error.
-    for i in range(len(w)):
-        for j in range(len(w[i])):
-            w[i][j] += EPSILON # add a tiny epsilon amount to the weight
-            _, e_ = predict(X, T) # re-run our network to predict the new error
-            dW[i][j] = sum(e - e_) / EPSILON
-            w[i][j] -= EPSILON # revert our change.
+    # now, shift all of the weights in all of the layers, and for each such
+    # weight recompute the error to determine how that weight affects it
+    dws = [] # output derivatives per layer
+    for l in layers:
+        # some layers may just do a calculation without any weights (like the
+        # final error layers).
+        w = getattr(l, "W", np.array([]))
+        dw = np.zeros(w.shape) # output derivatives for the layer
+        for i in range(len(w)):
+            for j in range(len(w[i])):
+                w[i][j] += epsilon # shift the weight by a tiny epsilon amount
+                yij = reduce(lambda x, l: l.forward(x), layers, x)
+                eij, _ = last.backward(t) # re-run the network for the new error
+                dw[i][j] = sum(e - eij) / epsilon # normalize the difference
+                w[i][j] -= epsilon # rever our change
 
-    dWs.append(dW)
+        dws.append(dw)
 
-# Now we're ready for our update - same as before:
-for W, dW in zip(Ws, dWs):
-    W += ALPHA * dW
+    return dws
+
+# predict the output of our single-instance training set:
+last = layers[len(layers) - 1] # last error function
+y = reduce(lambda x, l: l.forward(x), layers, X)
+e, _ = last.backward(T)
+print "ERROR Correct? = %s" % np.allclose(e, [0.253637, 0.027490])
+print e
+
+# we can now use our gradient function to numerically compute the derivatives
+# of all of the weights in the network
+dws = gradients(layers, X, T)
+for l, dw in zip(layers, dws):
+    w = getattr(l, "W", 0.)
+    w += ALPHA * dw
+    l.W = w
 
 # print the updated weights
 print
