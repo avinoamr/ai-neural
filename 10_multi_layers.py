@@ -102,7 +102,6 @@ class SquaredError(object):
 l1 = TanH(Wxh)
 l2 = TanH(Why)
 l3 = SquaredError()
-layers = [l1, l2, l3]
 
 # Now's the tricky bit - how do we learn the weights? Before, we've used
 # calculus to compute the derivative of the error function w.r.t each weight. We
@@ -151,14 +150,19 @@ def gradients(layers, x, t, epsilon = 0.0001):
     return dws
 
 # predict the output of our single-instance training set:
-last = layers[len(layers) - 1] # last error function
-y = reduce(lambda x, l: l.forward(x), layers, X)
-e = last.error(T)
+# NOTE same as: reduce(lambda x, l: l.forward(x), layers, x)
+h = l1.forward(X)
+y = l2.forward(h)
+y = l3.forward(y)
+
+# compute the error
+e = l3.error(T)
 print "ERROR Correct? = %s" % np.allclose(e, [0.253637, 0.027490])
 print e
 
 # we can now use our gradient function to numerically compute the derivatives
 # of all of the weights in the network
+layers = [l1, l2, l3]
 dws = gradients(layers, X, T)
 for l, dw in zip(layers, dws):
     w = getattr(l, "W", 0.)
