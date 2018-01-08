@@ -70,7 +70,7 @@ T = np.array([.01, .99])
 Wxh = np.array([[.15, .20, .35], [.25, .30, .35]]) # input to hidden
 Why = np.array([[.40, .45, .60], [.50, .55, .60]]) # hidden to output
 
-# In order to avoid code repetition for each weights matrix, we'll use a Layer
+# In order to avoid code repetition for each weights matrix, we'll use a TanH
 # class to implement the prediction and derivatives:
 class TanH(object):
     def __init__(self, w):
@@ -93,11 +93,10 @@ class SquaredError(object):
         self._y = x
         return x
 
-    # error layers receive the target vector and returns the error and
-    # derivative of the error
-    def backward(self, t):
+    # error layers receive the target vector and returns the error
+    def error(self, t):
         y = self._y
-        return (y - t) ** 2 / 2, y - t
+        return (y - t) ** 2 / 2
 
 # now lets create our two layers with the weights we've created before:
 l1 = TanH(Wxh)
@@ -120,15 +119,16 @@ layers = [l1, l2, l3]
 # difference in error will be our approximation of the derivative. While this
 # approach is insanely ineffective for any production code, it will still be
 # useful in the future for checking that our back propoagation code was
-# implemented correctly (a process called Gradient Checking)
+# implemented correctly (a process called Gradient Checking). Yes, this code is
+# very messy - but that's the nature of these gradient checks functions.
 #
 # NOTE this function can be used for gradients checks whenever the provided
-# layers adhere to the conventional API for forward() and backward()
+# layers adhere to the conventional API for forward(), error() and backward()
 def gradients(layers, x, t, epsilon = 0.0001):
     # compute the error of the given x, t
     last = layers[len(layers) - 1]
     y = reduce(lambda x, l: l.forward(x), layers, x)
-    e, _ = last.backward(t)
+    e = last.error(t)
 
     # now, shift all of the weights in all of the layers, and for each such
     # weight recompute the error to determine how that weight affects it
@@ -142,7 +142,7 @@ def gradients(layers, x, t, epsilon = 0.0001):
             for j in range(len(w[i])):
                 w[i][j] += epsilon # shift the weight by a tiny epsilon amount
                 yij = reduce(lambda x, l: l.forward(x), layers, x)
-                eij, _ = last.backward(t) # re-run the network for the new error
+                eij = last.error(t) # re-run the network for the new error
                 dw[i][j] = sum(e - eij) / epsilon # normalize the difference
                 w[i][j] -= epsilon # rever our change
 
@@ -153,7 +153,7 @@ def gradients(layers, x, t, epsilon = 0.0001):
 # predict the output of our single-instance training set:
 last = layers[len(layers) - 1] # last error function
 y = reduce(lambda x, l: l.forward(x), layers, X)
-e, _ = last.backward(T)
+e = last.error(T)
 print "ERROR Correct? = %s" % np.allclose(e, [0.253637, 0.027490])
 print e
 
