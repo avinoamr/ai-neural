@@ -23,8 +23,7 @@ T = np.array([.01, .99])
 Wxh = np.array([[.15, .20, .35], [.25, .30, .35]])
 Why = np.array([[.40, .45, .60], [.50, .55, .60]])
 
-# Layer represents a single neural network layer of weights
-class Layer(object):
+class TanH(object):
     def __init__(self, w):
         self.W = w
 
@@ -128,22 +127,43 @@ class Layer(object):
         # from the previous layer.
         return np.delete(dx, -1)
 
+
+class SquaredError(object):
+    def forward(self, x):
+        # squared error layer doesn't modify the output. We will see other error
+        # functions that do modify the output (Softmax, for example).
+        self._y = x
+        return x
+
+    def error(self, t):
+        y = self._y
+        return (y - t) ** 2 / 2
+
+    # squared error function just returns the simple derivative
+    def backward(self, t):
+        y = self._y
+        return y - t
+
 # build the two layers in the network
-l1 = Layer(Wxh)
-l2 = Layer(Why)
+l1 = TanH(Wxh)
+l2 = TanH(Why)
+l3 = SquaredError()
 
 # forward-pass
+# NOTE same as: reduce(lambda x, l: l.forward(x), layers, x)
 h = l1.forward(X)
 y = l2.forward(h) # output from first layer is fed as input to the second
+y = l3.forward(y) # output from second layer is fed as input to the error layer
 
-# now compute our error, same as before
-e = (y - T) ** 2 /2
-print "ERROR %s" % sum(e) # =  0.298371
+# now compute our error, same as before.
+e = l3.error(T)
+print "ERROR Correct? = %s" % np.allclose(e, [0.253637, 0.027490])
+print e
 
 # backward-pass
 #
 # Now we want to walk backwards and compute the derivatives of the total error
-# w.r.t every weight in both layers. In other words, we want to know how every
+# w.r.t every weight in all layers. In other words, we want to know how every
 # weight affects the error function. There are several ways to go about that.
 #
 # One option is to use pertubations: basically attempt to change one weight at a
@@ -160,9 +180,11 @@ print "ERROR %s" % sum(e) # =  0.298371
 # these output derivatives backwards - starting from the final error derivative
 # and allowing each layer to finally feed the derivatives of its inputs to the
 # layer below.
-d = y - T # start error derivative at the top error layer. Same as before.
-d = l2.backward(d)
-_ = l1.backward(d)
+#
+# NOTE: same as reduce(lambda d, l: l.backward(d), reversed(layers), t)
+d = l3.backward(T) # derivative of the error function
+d = l2.backward(d) # derivatives of the weights from the second layer
+_ = l1.backward(d) # we don't care about the derivative of the input
 
 # print the updated weights. NOTE that we can check our math by comparing the
 # weights from the back-prop algorithm with the results we received before with
