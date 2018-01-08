@@ -35,7 +35,7 @@ import numpy as np
 np.random.seed(1)
 
 ALPHA = 0.1
-EPOCHS = 400
+EPOCHS = 100
 
 # in our new data, regardless of the input, the target is almost always 1. But,
 # in a fifth of the cases output is turned off. Out goal is that our final
@@ -117,11 +117,26 @@ for i in xrange(EPOCHS):
         #   p = [0.032, 0.087, 0.237, 0.644]    =>
         #   SUM(p) = 1
         #
+        # NOTE that the aforementioned calculation of softmax, while numerically
+        # correct, is a bit tricky to compute because the exp() function grows
+        # extremely fast (urgh, exponentially). Such that even at y = 400,
+        # exp(400) is too big to be computed. A more computationally stable
+        # version of this calculation is one where we offset all of the values
+        # such that they maintain their difference using smaller numbers. For
+        # example:
+        #
+        #   softmax(X) = exp(X - max(X)) / sum(exp(X - max(X)))
+        #                      ^^^^^^^^              ^^^^^^^^
+        #
+        # By subtracting the maximum value, we maintain the same properties,
+        # only using smaller numbers that wouldn't explode the exponent.
+        #
         # NOTE that this is somewhat similar to lateral inhibition in biological
         # neural networks due to the fact that the largest activation inhibits
         # the other lesser activations, by the fact that we find the log
         # probablities rather than just standard normalization.
-        p = np.exp(y) / np.sum(np.exp(y))
+        exps = np.exp(y - np.max(y))
+        p = exps / np.sum(exps)
 
         # error & derivative
         # For the first time we're introducing a different error function: the
@@ -146,8 +161,22 @@ for i in xrange(EPOCHS):
         # values. In other words, we only care about the loss of the target
         # prediction, as it will force all of the other ones into place.
         #
+        # NOTE again, that this cross-entropy calculation is computationally
+        # difficult, because of the case where p = 0, log(p) = -infinity. This
+        # might happen for very small p's as well due to round errors. But we
+        # don't really need to compute log(p) unless t = 1. So, instead of
+        # computing log(p) for all p's, it's better to only compute it for the
+        # cases where t = 1 (argmax). This also has the performance advantage of
+        # not computing the log for every p. This doesn't eliminate the problem,
+        # but it will be reduced because it will only happen for cases where the
+        # model is 100% sure of an outcome, but the target value is different.
+        # Perhaps a better approach is to clip p for a very small value like
+        # 0.00000001, to force the model to never be 100% sure of an outcome.
+        #
         # [1] https://www.wolframalpha.com/input/?i=-log(x)
-        e += sum(t * -np.log(p))
+        #
+        # e += sum(t * -np.log(p)) # computationally unstable at p = 0
+        e += -np.log(p[np.argmax(t)])
 
         # Now for the derivatives. We've added two expressions that we need to
         # derive: the softmax function and the cross-entropy error function. I
@@ -166,4 +195,5 @@ for i in xrange(EPOCHS):
 
     dist /= len(data) # average out the probablity distribution
     e /= len(data) # average out the error
-    print "%s: ERROR = %s ; DISTRIBUTION = %s" % (i, e, dist)
+    prec = "%d%% / %d%%" % (dist[0] * 100, dist[1] * 100)
+    print "%s: ERROR = %s ; DISTRIBUTION = %s" % (i, e, prec)
