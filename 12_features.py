@@ -24,8 +24,8 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 0.5
-EPOCHS = 1000
+ALPHA = 3
+EPOCHS = 300
 H = 2 # number of hidden neurons
 
 # We'll use faux car insurance data, where we wish to predict the likelihood of
@@ -56,7 +56,7 @@ T = np.array([
 
 class Sigmoid(object):
     def __init__(self, n, m):
-        self.W = np.random.randn(m, n + 1)
+        self.W = np.random.random((m, n + 1))
 
     # forward pass is the same as before.
     def forward(self, x):
@@ -118,9 +118,9 @@ print
 # the network has learned:
 print "l1.W=", l1.W
 
-#            Young      Old       Female   Male       Bias
-# l1.W = [  [-2.070330  4.346880  3.893700 -2.452050  1.285958]
-#           [-5.259462  2.738003  3.075649 -5.133379 -2.261241]   ]
+#            YOUNG      OLD      FEMALE      MALE      BIAS
+# l1.W =    -2.07       4.34     3.89       -2.45      1.28
+#           -5.25       2.73     3.07       -5.13     -2.26
 #
 # What does that mean? Lets start with (a) the first neruon: We can see that
 # the bias is high, thus by default this neruon will fire. Further, the Old
@@ -144,9 +144,9 @@ print "l1.W=", l1.W
 # we'll also need to look at the second output layer:
 print "l2.W=", l2.W
 
-#            O|F            O&F           Bias
-# l2.W = [  [-5.492996       5.786855       2.567549]  # Yes
-#           [ 5.549726      -5.852389      -2.593249]] # No
+#            O|F      O&F      BIAS
+# l2.W =    -5.49     5.78     2.56           # Yes
+#            5.54    -5.85    -2.59           # No
 #
 # Now we see that the first output neuron (a) which indicates that a claim is
 # likely to be filed, will fire by default due to the big positive bias. The Y|F
