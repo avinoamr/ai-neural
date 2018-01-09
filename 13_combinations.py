@@ -84,7 +84,7 @@ import numpy as np
 np.random.seed(1)
 
 ALPHA = 0.01
-EPOCHS = 1000
+EPOCHS = 4000
 H = 2 ** 4 # 2^N different combinations.
 
 X = np.array([
@@ -108,15 +108,13 @@ X = np.array([
 
 # random output - there's no intelligence here, but with 2^N hidden neurons
 # we'll always be able to fully eliminate the error.
-T = np.random.choice([0., 1.], len(X))
+T = np.random.choice([0, 1], len(X))
+T = np.eye(2)[T]
 
 # Layer represents a single neural network layer of weights
 class Layer(object):
-    W = None
-    _last = (None, None) # input, output
-
     def __init__(self, n, m):
-        self.W = np.random.randn(m, n + 1)
+        self.W = np.random.randn(m, n + 1) * 0.01
 
     # forward pass is the same as before.
     def forward(self, x):
@@ -154,10 +152,16 @@ data = zip(X, T)
 for i in xrange(EPOCHS):
     np.random.shuffle(data)
     e = 0.
+    accuracy = 0
     for x, t in data:
         # forward
         y = l1.forward(x)
         y = l2.forward(y)
+
+        # print y
+        # print np.argmax(y)
+        # print t
+        # sys.exit()
 
         # backward
         e += (y - t) ** 2 / 2
@@ -165,5 +169,7 @@ for i in xrange(EPOCHS):
         _, d = l2.backward(d)
         _, d = l1.backward(d)
 
+        accuracy += 1 if np.argmax(y) == np.argmax(t) else 0
+
     e /= len(data)
-    print "%s: ERROR = %s" % (i, sum(e))
+    print "%s: ERROR = %s ; ACCURACY = %s" % (i, e, accuracy)
