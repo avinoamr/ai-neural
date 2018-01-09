@@ -24,8 +24,8 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 3
-EPOCHS = 300
+ALPHA = 1
+EPOCHS = 700
 H = 2 # number of hidden neurons
 
 # We'll use faux car insurance data, where we wish to predict the likelihood of

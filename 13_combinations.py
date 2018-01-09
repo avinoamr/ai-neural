@@ -83,8 +83,8 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 3
-EPOCHS = 200
+ALPHA = 1
+EPOCHS = 1300
 H = 2 ** 4 # 2^N different combinations.
 
 X = np.array([
