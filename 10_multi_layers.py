@@ -53,6 +53,9 @@
 # linear regression, the last output layer might not have an activation function
 # in order to allow the output to be an unbound combination of the functions
 # in the hidden layers.
+#
+# The data for this calculation can be verified at:
+# https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
 import numpy as np
 
 ALPHA = .5
@@ -72,15 +75,15 @@ Why = np.array([[.40, .45, .60], [.50, .55, .60]]) # hidden to output
 
 # In order to avoid code repetition for each weights matrix, we'll use a TanH
 # class to implement the prediction and derivatives:
-class TanH(object):
+class Sigmoid(object):
     def __init__(self, w):
         self.W = w
 
     # forward pass - compute the predicted output for the given input
     def forward(self, x):
-        x = np.append(x, 1.) # add the fixed input for bias
-        z = np.dot(self.W, x) # derivate: x
-        y = np.tanh(z) # tanh non-linear activation
+        x = np.append(x, 1.)
+        z = np.dot(self.W, x)
+        y = 1. / (1. + np.exp(-z)) # sigmoid non-linear activation
         return y
 
 # We will also use a separate, final error layer. This will make our network
@@ -99,8 +102,8 @@ class SquaredError(object):
         return (y - t) ** 2 / 2
 
 # now lets create our two layers with the weights we've created before:
-l1 = TanH(Wxh)
-l2 = TanH(Why)
+l1 = Sigmoid(Wxh)
+l2 = Sigmoid(Why)
 l3 = SquaredError()
 
 # Now's the tricky bit - how do we learn the weights? Before, we've used
@@ -157,7 +160,7 @@ y = l3.forward(y)
 
 # compute the error
 e = l3.error(T)
-print "ERROR Correct? = %s" % np.allclose(e, [0.253637, 0.027490])
+print "ERROR Correct? = %s" % np.allclose(e, [0.274811, 0.023560])
 print e
 
 # we can now use our gradient function to numerically compute the derivatives
@@ -172,14 +175,14 @@ for l, dw in zip(layers, dws):
 # print the updated weights
 print
 print "l1.W Correct? = %s" % np.allclose(l1.W, [
-    [0.148130, 0.196260, 0.312602],
-    [0.247892, 0.295784, 0.307847]
+    [0.149780, 0.199561, 0.345614],
+    [0.249751, 0.299502, 0.345022]
 ])
 print l1.W
 
 print
 print "l2.W Correct? = %s" % np.allclose(l2.W, [
-    [0.338580, 0.386369, 0.429644],
-    [0.518139, 0.568792, 0.650312]
+    [0.358916, 0.408666, 0.530751],
+    [0.511301, 0.561370, 0.619047]
 ])
 print l2.W
