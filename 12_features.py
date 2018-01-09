@@ -25,7 +25,7 @@ import numpy as np
 np.random.seed(1)
 
 ALPHA = 0.5
-EPOCHS = 400
+EPOCHS = 1000
 H = 2 # number of hidden neurons
 
 # We'll use faux car insurance data, where we wish to predict the likelihood of
@@ -54,11 +54,7 @@ T = np.array([
     [0., 1.]   # No
 ])
 
-# Layer represents a single neural network layer of weights
-class Layer(object):
-    W = None
-    _last = (None, None) # input, output
-
+class Sigmoid(object):
     def __init__(self, n, m):
         self.W = np.random.randn(m, n + 1)
 
@@ -66,7 +62,7 @@ class Layer(object):
     def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
         z = np.dot(self.W, x) # derivate: x
-        y = np.tanh(z)
+        y = 1. / (1. + np.exp(-z))
 
         self._last = x, y
         return y
@@ -77,7 +73,7 @@ class Layer(object):
         x, y = self._last
 
         # how the weights affect total error (derivative w.r.t w)
-        dz = dy * (1 - y ** 2)
+        dz = dy * (y * (1 - y))
         dw = np.array([d * x for d in dz])
 
         # how the input (out of previous layer) affect total error (derivative
@@ -91,10 +87,11 @@ class Layer(object):
 
 # we'll use a hidden layer of 2 neurons and examine the learned weights
 data = zip(X, T)
-l1 = Layer(4, H)
-l2 = Layer(H, 2)
+l1 = Sigmoid(4, H)
+l2 = Sigmoid(H, 2)
 for i in xrange(EPOCHS):
     e = 0.
+    accuracy = 0
     for x, t in data:
         # forward
         y = l1.forward(x)
@@ -106,8 +103,10 @@ for i in xrange(EPOCHS):
         _, d = l2.backward(d)
         _, d = l1.backward(d)
 
+        accuracy += 1 if np.argmax(y) == np.argmax(t) else 0
+
     e /= len(data)
-    print "%s: ERROR = %s" % (i, sum(e))
+    print "%s: ERROR = %s ; ACCURACY = %s" % (i, sum(e), accuracy)
 
 print
 
