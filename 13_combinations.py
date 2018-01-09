@@ -83,8 +83,8 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 0.1
-EPOCHS = 500
+ALPHA = 3
+EPOCHS = 200
 H = 2 ** 4 # 2^N different combinations.
 
 X = np.array([
@@ -112,15 +112,15 @@ T = np.random.choice([0, 1], len(X))
 T = np.eye(2)[T]
 
 # Layer represents a single neural network layer of weights
-class Layer(object):
+class Sigmoid(object):
     def __init__(self, n, m):
-        self.W = np.random.randn(m, n + 1) * 0.01
+        self.W = np.random.randn(m, n + 1)
 
     # forward pass is the same as before.
     def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
         z = np.dot(self.W, x) # derivate: x
-        y = np.tanh(z)
+        y = 1. / (1. + np.exp(-z))
 
         self._last = x, y
         return y
@@ -131,7 +131,7 @@ class Layer(object):
         x, y = self._last
 
         # how the weights affect total error (derivative w.r.t w)
-        dz = dy * (1 - y ** 2)
+        dz = dy * (y * (1 - y))
         dw = np.array([d * x for d in dz])
 
         # how the input (out of previous layer) affect total error (derivative
@@ -145,8 +145,8 @@ class Layer(object):
 
 # we'll use a hidden layer of 2^N neurons to cover every possible combination
 # of the input. One neuron per combination of the 4 input neurons.
-l1 = Layer(4, H)
-l2 = Layer(H, 2)
+l1 = Sigmoid(4, H)
+l2 = Sigmoid(H, 2)
 
 data = zip(X, T)
 for i in xrange(EPOCHS):
@@ -157,11 +157,6 @@ for i in xrange(EPOCHS):
         # forward
         y = l1.forward(x)
         y = l2.forward(y)
-
-        # print y
-        # print np.argmax(y)
-        # print t
-        # sys.exit()
 
         # backward
         e += (y - t) ** 2 / 2
