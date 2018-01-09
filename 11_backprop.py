@@ -10,7 +10,8 @@
 # with one of the major breakthroughs in Machine Learning: Back Propogation.
 #
 # Before continuing, it's advised to read this great step-by-step tutorial about
-# back propagation that might provide some more insight and intuition:
+# back propagation that might provide some more insight and intuition. This
+# article provides the data used by this exercise:
 # https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
 import numpy as np
 
@@ -23,7 +24,7 @@ T = np.array([.01, .99])
 Wxh = np.array([[.15, .20, .35], [.25, .30, .35]])
 Why = np.array([[.40, .45, .60], [.50, .55, .60]])
 
-class TanH(object):
+class Sigmoid(object):
     def __init__(self, w):
         self.W = w
 
@@ -31,7 +32,7 @@ class TanH(object):
     def forward(self, x):
         x = np.append(x, 1.)
         z = np.dot(self.W, x)
-        y = np.tanh(z)
+        y = 1. / (1. + np.exp(-z))
 
         # we will need to store the information of the last input and output in
         # order to derive analytically.
@@ -63,7 +64,7 @@ class TanH(object):
         # given as the input to this layer from the next layer. This is exactly
         # the same as before, except that we receive dy as input, instead of
         # computing it here.
-        dz = dy * (1 - y ** 2)
+        dz = dy * (y * (1 - y))
         dw = np.array([d * x for d in dz])
 
         # before we update the weights, we'll compute our return value, which
@@ -145,8 +146,8 @@ class SquaredError(object):
         return y - t
 
 # build the two layers in the network
-l1 = TanH(Wxh)
-l2 = TanH(Why)
+l1 = Sigmoid(Wxh)
+l2 = Sigmoid(Why)
 l3 = SquaredError()
 
 # forward-pass
@@ -157,7 +158,7 @@ y = l3.forward(y) # output from second layer is fed as input to the error layer
 
 # now compute our error, same as before.
 e = l3.error(T)
-print "ERROR Correct? = %s" % np.allclose(e, [0.253637, 0.027490])
+print "ERROR Correct? = %s" % np.allclose(e, [0.274811, 0.023560])
 print e
 
 # backward-pass
@@ -191,14 +192,14 @@ _ = l1.backward(d) # we don't care about the derivative of the input
 # pertubations. This is known as gradient checking.
 print
 print "l1.W Correct? = %s" % np.allclose(l1.W, [
-    [0.148130, 0.196260, 0.312602],
-    [0.247892, 0.295784, 0.307847]
+    [0.149780, 0.199561, 0.345614],
+    [0.249751, 0.299502, 0.345022]
 ])
 print l1.W
 
 print
 print "l2.W Correct? = %s" % np.allclose(l2.W, [
-    [0.338580, 0.386369, 0.429644],
-    [0.518139, 0.568792, 0.650312]
+    [0.358916, 0.408666, 0.530751],
+    [0.511301, 0.561370, 0.619047]
 ])
 print l2.W

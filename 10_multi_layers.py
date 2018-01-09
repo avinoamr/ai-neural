@@ -83,7 +83,7 @@ class Sigmoid(object):
     def forward(self, x):
         x = np.append(x, 1.)
         z = np.dot(self.W, x)
-        y = 1. / (1. + np.exp(-z)) # sigmoid non-linear activation
+        y = 1. / (1. + np.exp(-z))
         return y
 
 # We will also use a separate, final error layer. This will make our network
