@@ -83,8 +83,8 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 0.01
-EPOCHS = 4000
+ALPHA = 0.1
+EPOCHS = 500
 H = 2 ** 4 # 2^N different combinations.
 
 X = np.array([
@@ -172,4 +172,4 @@ for i in xrange(EPOCHS):
         accuracy += 1 if np.argmax(y) == np.argmax(t) else 0
 
     e /= len(data)
-    print "%s: ERROR = %s ; ACCURACY = %s" % (i, e, accuracy)
+    print "%s: ERROR = %s ; ACCURACY = %s of %s" % (i, e, accuracy, len(data))
