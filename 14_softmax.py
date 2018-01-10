@@ -46,59 +46,34 @@ X = np.array([[1.],     [1.],     [1.],     [1.],     [1.]])
 T = np.array([[1., 0.], [1., 0.], [1., 0.], [1., 0.], [0., 1.]])
 #                                                      ^^ outlier
 
-# Layer represents a single neural network layer of weights
-class Layer(object):
-    W = None
-    _last = (None, None) # input, output
-
+class Linear(object):
     def __init__(self, n, m):
         self.W = np.random.randn(m, n + 1)
 
-    # forward pass is the same as before.
     def forward(self, x):
         x = np.append(x, 1.) # add the fixed input for bias
-        z = np.dot(self.W, x) # derivate: x
-        y = np.tanh(z)
-
+        y = np.dot(self.W, x) # derivate: x
         self._last = x, y
         return y
 
-    # backward pass - compute the derivatives of each weight in this layer and
-    # update them.
     def backward(self, dy):
         x, y = self._last
-
-        # how the weights affect total error (derivative w.r.t w)
-        dz = dy * (1 - y ** 2)
-        dw = np.array([d * x for d in dz])
-
-        # how the input (out of previous layer) affect total error (derivative
-        # w.r.t x). Derivates of the reverse of the forward pass.
-        dx = np.dot(dz, self.W)
-        dx = np.delete(dx, -1) # remove the bias input derivative
-
-        # update
+        dw = np.array([d * x for d in dy])
+        dx = np.dot(dy, self.W)
         self.W -= ALPHA * dw
-        return dw, dx
+        return np.delete(dx, -1)
 
-l1 = Layer(1, 2)
-data = zip(X, T)
-for i in xrange(EPOCHS):
-    np.random.shuffle(data)
+# Softmax is in itself a non-linearity, so it acts both as the final layer
+# making the final changes on the input and also as the final error layer which
+# computes the error and derivatives.
+class Softmax(Linear):
+    def forward(self, x):
+        y = super(Softmax, self).forward(x) # linear
 
-    e = 0.
-    dist = 0.
-    for x, t in data:
-
-        # forward
-        y = l1.forward(x)
-
-        # softmax
-        # this step (often implemented as a separate final layer) squashes the
-        # arbitrary values we used until now to one where the sum of all of the
-        # values add up to 1. This is obviously required for representing
-        # probablistic distribution of possibilities, as the total has to be
-        # 100% (or 1):
+        # this step squashes the arbitrary values we used until now to one where
+        # the sum of all of the values add up to 1. This is obviously required
+        # for representing probablistic distribution of possibilities, as the
+        # total has to be 100% (1):
         #
         #   softmax(X) = exp(X) / sum(exp(X))
         #
@@ -137,8 +112,12 @@ for i in xrange(EPOCHS):
         # probablities rather than just standard normalization.
         exps = np.exp(y - np.max(y))
         p = exps / np.sum(exps)
+        self._p = p
+        return p
 
-        # error & derivative
+    def error(self, t):
+        p = self._p
+
         # For the first time we're introducing a different error function: the
         # cross-entropy error function. Remember that the purpose of the error
         # function is to measure the difference between a computed value and an
@@ -165,18 +144,20 @@ for i in xrange(EPOCHS):
         # difficult, because of the case where p = 0, log(p) = -infinity. This
         # might happen for very small p's as well due to round errors. But we
         # don't really need to compute log(p) unless t = 1. So, instead of
-        # computing log(p) for all p's, it's better to only compute it for the
-        # cases where t = 1 (argmax). This also has the performance advantage of
-        # not computing the log for every p. This doesn't eliminate the problem,
-        # but it will be reduced because it will only happen for cases where the
-        # model is 100% sure of an outcome, but the target value is different.
-        # Perhaps a better approach is to clip p for a very small value like
-        # 0.00000001, to force the model to never be 100% sure of an outcome.
+        # computing log(p) for all p's, it's better to only compute it only for
+        # the case where t = 1 (argmax). This also has the performance advantage
+        # of not computing the log for every p. This doesn't eliminate the
+        # problem, but it will be reduced because it will only happen for cases
+        # where the model is 100% sure of an outcome, but the target value is
+        # different. Perhaps a better approach is to clip p to a very small
+        # value like 0.00000001 to force the model to never be 100% sure of an
+        # outcome.
         #
         # [1] https://www.wolframalpha.com/input/?i=-log(x)
-        #
-        # e += sum(t * -np.log(p)) # computationally unstable at p = 0
-        e += -np.log(p[np.argmax(t)])
+        return -np.log(p[np.argmax(t)])
+
+    def backward(self, t):
+        p = self._p
 
         # Now for the derivatives. We've added two expressions that we need to
         # derive: the softmax function and the cross-entropy error function. I
@@ -186,9 +167,23 @@ for i in xrange(EPOCHS):
         #
         # [2] https://deepnotes.io/softmax-crossentropy
         dy = p - t
+        return super(Softmax, self).backward(dy)
 
-        # and now, backwards:
-        l1.backward(dy)
+l1 = Softmax(1, 2)
+data = zip(X, T)
+for i in xrange(EPOCHS):
+    np.random.shuffle(data)
+
+    e = 0.
+    dist = 0.
+    for x, t in data:
+
+        # forward
+        p = l1.forward(x)
+
+        # error & backward
+        e += l1.error(t)
+        l1.backward(t)
 
         # instead of accuracy, we'll now measure the distribution
         dist += p
