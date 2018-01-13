@@ -173,9 +173,9 @@ T = OneHot(OUTPUTS).encode(T)
 l1 = TanH(len(INPUTS), H)
 l2 = TanH(H, len(OUTPUTS))
 l3 = SquaredError()
+layers = [l1, l2, l3]
 
 indices = range(len(X))
-
 last_e = float('inf')
 for i in xrange(EPOCHS):
     np.random.shuffle(indices)
@@ -188,15 +188,11 @@ for i in xrange(EPOCHS):
         ts = T[minib]
 
         # forward
-        hs = l1.forward(xs)
-        ys = l2.forward(hs)
-        ys = l3.forward(ys)
+        ys = reduce(lambda xs, l: l.forward(xs), layers, xs)
 
         # backward
-        e += sum(l3.error(ts))
-        dys = l3.backward(ts)
-        dhs = l2.backward(dys)
-        dxs = l1.backward(dhs)
+        e += sum(layers[-1].error(ts))
+        dx = reduce(lambda ds, l: l.backward(ds), reversed(layers), ts)
 
         # calculate accuracy
         accuracy += sum(np.argmax(ys, axis=1) == np.argmax(ts, axis=1))
