@@ -57,7 +57,7 @@ class OneHot(list):
         return x
 
 # Layer represents a single neural network layer of weights
-class Layer(object):
+class TanH(object):
     W = None
     _last = (None, None) # input, output
 
@@ -103,13 +103,28 @@ class Layer(object):
         self.W -= ALPHA * dw
         return dxs
 
+class SquaredError(object):
+    def forward(self, xs):
+        self._ys = xs
+        return xs
+
+    def error(self, ts):
+        ys = self._ys
+        return (ys - ts) ** 2 / 2
+
+    # squared error function just returns the simple derivative
+    def backward(self, ts):
+        ys = self._ys
+        return ys - ts
+
 # enode all of the inputs and targets
 X = OneHot(INPUTS).encode(X)
 T = OneHot(OUTPUTS).encode(T)
 
 # create the layers
-l1 = Layer(len(INPUTS), H)
-l2 = Layer(H, len(OUTPUTS))
+l1 = TanH(len(INPUTS), H)
+l2 = TanH(H, len(OUTPUTS))
+l3 = SquaredError()
 indices = range(len(X))
 
 last_e = float('inf')
@@ -126,10 +141,11 @@ for i in xrange(EPOCHS):
         # forward
         hs = l1.forward(xs)
         ys = l2.forward(hs)
+        ys = l3.forward(ys)
 
         # backward
-        e += sum((ys - ts) ** 2 / 2)
-        dys = ys - ts
+        e += sum(l3.error(ts))
+        dys = l3.backward(ts)
         dhs = l2.backward(dys)
         dxs = l1.backward(dhs)
 
