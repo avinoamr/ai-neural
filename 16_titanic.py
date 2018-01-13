@@ -171,9 +171,8 @@ T = OneHot(OUTPUTS).encode(T)
 
 # create the layers
 l1 = TanH(len(INPUTS), H)
-l2 = TanH(H, len(OUTPUTS))
-l3 = SquaredError()
-layers = [l1, l2, l3]
+l2 = Softmax(H, len(OUTPUTS))
+layers = [l1, l2]
 
 indices = range(len(X))
 last_e = float('inf')
