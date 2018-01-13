@@ -117,6 +117,54 @@ class SquaredError(object):
         ys = self._ys
         return ys - ts
 
+class Softmax(object):
+    def __init__(self, n, m):
+        self.M, self.N = m, n
+        self.W = np.random.randn(m, n + 1)
+
+    def forward(self, xs):
+        bias = np.ones((xs.shape[0], 1))
+        xs = np.concatenate((xs, bias), axis=1)
+        ys = np.zeros((len(xs), self.M))
+        for i, x in enumerate(xs):
+            z = np.dot(self.W, x)
+            exps = np.exp(z - np.max(z))
+            y = exps / np.sum(exps)
+            ys[i] = y
+
+        self._last = xs, ys
+        return ys
+
+    def error(self, ts):
+        xs, ys = self._last
+        es = np.zeros(ts.shape)
+        for i, y in enumerate(ys):
+            t = ts[i]
+            es[i] = -np.log(y[np.argmax(t)])
+
+        return es
+
+    def backward(self, ts):
+        xs, ys = self._last
+        dxs = np.zeros((len(ts), self.N))
+        dws = np.zeros((len(ts),) + self.W.shape)
+        for i in range(len(ts)):
+            x = xs[i]
+            y = ys[i]
+            t = ts[i]
+
+            dy = y - t
+            dw = np.array([d * x for d in dy])
+            dws[i] = dw
+
+            dx = np.dot(dy, self.W)
+            dx = np.delete(dx, -1)
+            dxs[i] = dx
+
+        dw = sum(dws) / len(dws)
+        self.W -= ALPHA * dw
+        return dxs
+
 # enode all of the inputs and targets
 X = OneHot(INPUTS).encode(X)
 T = OneHot(OUTPUTS).encode(T)
@@ -125,6 +173,7 @@ T = OneHot(OUTPUTS).encode(T)
 l1 = TanH(len(INPUTS), H)
 l2 = TanH(H, len(OUTPUTS))
 l3 = SquaredError()
+
 indices = range(len(X))
 
 last_e = float('inf')
