@@ -90,8 +90,8 @@ class SquaredError(object):
 
 # we'll use a hidden layer of 2 neurons and examine the learned weights
 data = zip(X, T)
-l1 = Sigmoid(4, H)
-l2 = Sigmoid(H, 2)
+l1 = Sigmoid(X.shape[1], H)
+l2 = Sigmoid(H, T.shape[1])
 l3 = SquaredError()
 layers = [l1, l2, l3] # try removing l2 to see that it's unable to learn
 for i in xrange(EPOCHS):
