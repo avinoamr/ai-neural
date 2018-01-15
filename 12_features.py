@@ -24,8 +24,8 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 1
-EPOCHS = 450
+ALPHA = 0.5
+EPOCHS = 1500
 H = 2 # number of hidden neurons
 
 # XOR(feature 1, feature 2)
@@ -95,6 +95,7 @@ l2 = Sigmoid(H, 2)
 l3 = SquaredError()
 layers = [l1, l2, l3] # try removing l2 to see that it's unable to learn
 for i in xrange(EPOCHS):
+    np.random.shuffle(data)
     e = 0.
     accuracy = 0
     for x, t in data:
@@ -143,7 +144,7 @@ print "l1.W=", l1.W
 # when both Old AND Female (O&F) are turned on. NOTE that this is no longer one-
 # of-k, and thus both, or none, are likely to be turned on. To see how it works
 # we'll also need to look at the second output layer:
-# print "l2.W=", l2.W
+print "l2.W=", l2.W
 
 #            O|F      O&F      BIAS
 # l2.W =    -5.49     5.78     2.56           # Yes
