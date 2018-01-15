@@ -93,7 +93,12 @@
 #
 # This is because it's impossible to choose a weight for the input that's both
 # negative and positive. We need to pick one. So either that input makes the
-# output bigger, or smaller, or neither - but not conditionally both.
+# output bigger, or smaller, or neither - but not conditionally both. NOTE that
+# this is a weak definition of linearity in boolean function, and is possibly
+# wrong. I couldn't easily wrap my head around it, so perhaps the wikipedia
+# entry[1] on it will help.
+#
+# [1] https://en.wikipedia.org/wiki/Linearity#Boolean_functions
 import numpy as np
 np.random.seed(1)
 
