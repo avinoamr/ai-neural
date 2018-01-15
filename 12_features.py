@@ -24,34 +24,23 @@
 import numpy as np
 np.random.seed(1)
 
-ALPHA = 3
-EPOCHS = 300
+ALPHA = 1
+EPOCHS = 450
 H = 2 # number of hidden neurons
 
-# We'll use faux car insurance data, where we wish to predict the likelihood of
-# an insurance holder (by Gener & Age) to file a claim:
-#
-#   1. Young, Female => No
-#   2. Young, Male => Yes
-#   3. Old, Female => Yes
-#   4. Old, Male => No
-#
-# The data is intentionally designed such that each dimension in the input
-# (Gender or Age) cannot perfectly predict the output - thus there's no possible
-# set of weights that can compute the correct output.
+# XOR
 X = np.array([
-    # Young Old     Female Male
-    [ 1.,   0.,     1.,    0. ],     # Young Female
-    [ 1.,   0.,     0.,    1. ],     # Young Male
-    [ 0.,   1.,     1.,    0. ],     # Old Female
-    [ 0.,   1.,     0.,    1. ],     # Old Male
+    [0., 1., 0., 1.],   # XOR(0,0) = 0
+    [0., 1., 1., 0.],   # XOR(0,1) = 1
+    [1., 0., 0., 1.],   # XOR(1,0) = 1
+    [1., 0., 1., 0.]    # XOR(1,1) = 0
 ])
 
 T = np.array([
-    [0., 1.],  # No
-    [1., 0.],  # Yes
-    [1., 0.],  # Yes
-    [0., 1.]   # No
+    [0., 1.],           # XOR(0,0) = 0
+    [1., 0.],           # XOR(0,1) = 1
+    [1., 0.],           # XOR(1,0) = 1
+    [0., 1.]            # XOR(1,1) = 0
 ])
 
 class Sigmoid(object):
@@ -83,27 +72,39 @@ class Sigmoid(object):
 
         # update
         self.W -= ALPHA * dw
-        return dw, dx
+        return dx
+
+class SquaredError(object):
+    def forward(self, x):
+        self._y = x
+        return x
+
+    def error(self, t):
+        y = self._y
+        return (y - t) ** 2 / 2
+
+    # squared error function just returns the simple derivative
+    def backward(self, t):
+        y = self._y
+        return y - t
 
 # we'll use a hidden layer of 2 neurons and examine the learned weights
 data = zip(X, T)
 l1 = Sigmoid(4, H)
 l2 = Sigmoid(H, 2)
+l3 = SquaredError()
+layers = [l1, l2, l3] # try removing l2 to see that it's unable to learn
 for i in xrange(EPOCHS):
     e = 0.
     accuracy = 0
     for x, t in data:
         # forward
-        y = l1.forward(x)
-        y = l2.forward(y)
+        y = reduce(lambda x, l: l.forward(x), layers, x)
+        accuracy += 1 if np.argmax(y) == np.argmax(t) else 0
 
         # backward
-        e += (y - t) ** 2 / 2
-        d = y - t
-        _, d = l2.backward(d)
-        _, d = l1.backward(d)
-
-        accuracy += 1 if np.argmax(y) == np.argmax(t) else 0
+        e += l3.error(t)
+        d = reduce(lambda d, l: l.backward(d), reversed(layers), t)
 
     e /= len(data)
     print "%s: ERROR = %s ; ACCURACY = %s" % (i, sum(e), accuracy)
@@ -142,7 +143,7 @@ print "l1.W=", l1.W
 # when both Old AND Female (O&F) are turned on. NOTE that this is no longer one-
 # of-k, and thus both, or none, are likely to be turned on. To see how it works
 # we'll also need to look at the second output layer:
-print "l2.W=", l2.W
+# print "l2.W=", l2.W
 
 #            O|F      O&F      BIAS
 # l2.W =    -5.49     5.78     2.56           # Yes
