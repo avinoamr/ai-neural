@@ -10,6 +10,75 @@
 # where instead of approximating an output value for each input, we're
 # learning a threshold line in the function where values below these threshold
 # doesn't belong to a class, and values above it do.
+#
+# The weights of an output unit determine the logical expression for the
+# corresponding input, while the bias acts as a threshold (axon hillock) that
+# must be surpassed in order for the unit to activate. So the bias basically
+# describe the excitability of the unit, or how likely it is to fire. While the
+# weights are the effect of the individual inputs. Mathematically:
+#
+#   y = w * x + b >= 1      =>   w * x >= -b
+#
+# That means that in order for the output of the unit to be greater than 1 we
+# need w * x to be greater than the negative of the bias. Remember that in
+# classification the input x is a binary 0 or 1, so we have two cases:
+#
+#   x = 0   => w * 0 > -b = 0 > -b
+#   x = 1   => w * 1 > -b = w > -b
+#
+# So basically, the bias describes two properties: (a) the default activation of
+# the unit, whether it should fire or not on zero input (x = 0). And (b) how big
+# should the weights be to excite or inhibit that default activation for a non-
+# zero input (x = 1). A positive bias (1) will fire unless there are enough
+# negative weights (where the input is 1) to inhibit it, while a negative bias
+# (-1) will not fire unless there are enough positive weights to excite it. With
+# these two variables, we can describe any single-argument boolean function:
+#
+#   f       w   b
+#   T       0   1       y = 0 * x + 1  =  1
+#   F       0  -1       y = 0 * x - 1  = -1
+#   x       1   0       y = 1 * x + 0  =  x     = 0 (when x = 0) or 1 (x=1)
+#  !x      -1   1       y = -1 * x + 1 = -x + 1 = 0 (when x = 1) or 1 (x=0)
+#
+# So if we learn these w & b values, we can approximate any single-argument
+# boolean function. But when we add arguments, we can add boolean operations
+# like AND and OR. Lets start with AND: we will need the sum of a subgroup of
+# the weights exceed the negative bias:
+#
+#   w1 + w2 > -b ; w1 < -b ; w2 < -b
+#
+# It's possible to have other weights, but there's a subgroup of the weights
+# where each is not big enough to exceed -b by itself, but the sum of these
+# weights does exceed. Both of these weights needs to be activated (by an input
+# of 1) in order for the sum to be greater than -b. Thus the AND operator on the
+# input:
+#
+#   w1 = 1 ; w2 = 1 ; b = -2
+#   y = 1 * x1 + 1 * x2 >= 2
+#   f = x1 AND x2
+#
+# Because we might have several such subgroups that satisfy this relationship,
+# each subgroup can, by itself, exceed -b. Thus there's an OR operator between
+# them:
+#
+#   w1 = 1 ; w2 = 1 ; w3 = 1 ; b = 2
+#   y = 1 * x1 + 1 * x2 + 1 * x3 > 2
+#   f = (x1 AND x2) OR (x2 AND x3) OR (x1 AND x3)
+#
+# To generalize, we can approximate any function with the structure of:
+#
+#   f = (x1 AND x2 AND ...) OR (x5 AND x6 AND ...)
+#
+# Where the OR separates all subgroups of the weights that has a sum greater
+# than -b, while the AND separates the individual weights within each such
+# group. NOTE that more complex, non-linear boolean functions are still
+# impossible to approximate. The typical example is XOR, but more applicable is
+# conditinals, like:
+#
+#   f = if x1 AND x2:   x5
+#       if x3 AND x4:   x6
+#
+# This is common in many real-life examples as we'll see later.
 import numpy as np
 np.random.seed(1)
 
