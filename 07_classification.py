@@ -93,7 +93,7 @@
 #
 # This is because it's impossible to choose a weight for the input that's both
 # negative and positive. We need to pick one. So either that input makes the
-# output bigger, or smaller (or neither) - but not conditionally both.
+# output bigger, or smaller, or neither - but not conditionally both.
 import numpy as np
 np.random.seed(1)
 
@@ -105,17 +105,17 @@ ALPHA = 0.01
 X = ["f", "m", "f", "m", "f", "m", "f", "m", "f", "m", "f", "m", "f", "m"]
 T = [ 1,   0,   1,   1,   1,   0,   0,   0,   1,   0,   1,   1,   1,   0 ]
 
-# The main issue to take care of is encoding: how do we transform these textual
-# categories into numeric inputs that we can estimate. One naive approach might
-# be to use a single input feature, say a value of 0 represents a male, and 1
-# represents a female. That wouldn't work, because any kind of weight we'll use
-# will end up increasing for females. Thus we have no way to find different
-# weights for the different categories. This is not necessarily correct for
-# ordinal values like age or fare cost, but it's still common to learn these
-# weights independently by grouping multiple numeric values into a discrete
-# set of categories ("young", "old" for age; "cheap", "expansive" for fare cost)
-# The same limitation obviously applied if we use more values with binary
-# encoding.
+# One of the main issues to take care of is encoding: how do we transform these
+# textual categories into numeric inputs that we can estimate. One naive
+# approach might be to use a single input feature, say a value of 0 represents a
+# male, and 1 represents a female. That wouldn't work, because any kind of
+# weight we'll use will end up increasing for females. Thus we have no way to
+# find different weights for the different categories. This is not necessarily
+# correct for ordinal values like age or fare cost, but it's still common to
+# learn these weights independently by grouping multiple numeric values into a
+# discrete set of categories ("young", "old" for age; "cheap", "expansive" for
+# fare cost). The same limitation obviously applied if we use more values with
+# binary encoding.
 #
 # The best known approach currently is one-hot (or one-of-k) in which each value
 # is assigned a completely different input. If we have k values, we'll use
