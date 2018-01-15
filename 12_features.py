@@ -28,7 +28,7 @@ ALPHA = 1
 EPOCHS = 450
 H = 2 # number of hidden neurons
 
-# XOR
+# XOR(feature 1, feature 2)
 X = np.array([
     [0., 1., 0., 1.],   # XOR(0,0) = 0
     [0., 1., 1., 0.],   # XOR(0,1) = 1
