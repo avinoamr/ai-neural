@@ -73,7 +73,6 @@ class SquaredError(object):
         y = self._y
         return (y - t) ** 2 / 2
 
-    # squared error function just returns the simple derivative
     def backward(self, t):
         y = self._y
         return y - t
