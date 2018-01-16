@@ -129,10 +129,10 @@ print "l1.W=", l1.W
 #   [-5.99802997 -5.89528226  2.03292505]
 # ]
 #
-# Remember from classification (that although it's not mathmatically accurate
-# due to the way multi-class predictions are made) we can think of the boolean
-# output as: wx > -b. We've learned the following boolean expressions in the
-# hidden layer:
+# Remember from classification we can think of the boolean output as: wx > -b.
+# Since we're going through sigmoid, a negative input will result in a value
+# closer to 0 than to 1, while a positive input will be the opposite. This we've
+# learned the following boolean expressions in the hidden layer:
 #
 #   h1 = !x1 OR  !x2        => Same as: !(x1 AND x2)
 #   h2 = !x1 AND !x2        => Same as: !(x1 OR x2)

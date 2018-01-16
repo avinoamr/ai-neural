@@ -2,39 +2,9 @@
 # of hidden neurons affects the overall combinations that can be discovered.
 # Each such neuron is defined by a bias, which is kind of like a threshold or
 # baseline activation and then N weights that has to inhibit or excite beyond
-# that bias baseline:  out = [W1, W2, ..., b]
+# that bias baseline: y = wx + b > 0      => wx > -b
 #
-# Since we're going through the sigmoid activation, the weights needs to
-# overcome the bias by atleast 0.5 in order to fully excite the output. Using
-# tanh would produce a more reasonable distribution with the mean at 0 instead
-# of 0.5.
-#
-# We've seen that a hidden neuron can learn the AND and OR logic gates. This can
-# extended to more complicated expressions. Here are a few (NOTE that here we're
-# simplifying as if we were using the tanh activation where the mean tipping
-# point is at 0. In sigmoid, the mean is at 0.5):
-#
-#    w1  w2  w3  b    =>  EXPRESSION
-#    0   0   1   0        (w3)                 # IDENTITY
-#    0   0  -1   1        (!w3)                # NOT
-#    0   1   1  -1        (w2 || w3)           # OR
-#    1   1   1  -1        (w1 || w2 || w3)     # OR
-#    0   1   1  -2        (w2 && w3)           # AND
-#    1   1   1  -3        (w1 && w2 && w3)     # AND
-#    1   1   2  -2        (w1 && w2) || w3
-#    1   1   2  -3        (w1 || w2) && w3
-#    1   1   1  -2        (w1 && w2) || (w2 && w3) || (w1 && w3)   # 2 out of 3.
-#    1  -1  -1  -1        (w1 && !w2 && !w3)
-#    1   1  -2  -2        (w1 && w2 && !w3)
-#   -1   1   1  -2        (!w1 && w2 && w3)
-#    0  -1  -1   1        !(w2 || w3)          # NOR
-#   -1  -1  -1   1        !(w1 || w2 || w3)    # NOR
-#    0  -1  -1   2        !(w2 && w3)          # NAND
-#   -1  -1  -1   3        !(w1 && w2 && w3)    # NAND
-#    1  -1  -1   2        !(!w1 && w2 && w3)
-#   -2  -2  -3   3        !((w1 && w2) || w3)
-#
-# So the question is - how many different such expressions (hidden neurons) we
+# The question remains - how many different such expressions (hidden neurons) we
 # need to fully map the data? Obviously, at most there are 2^N different
 # combinations of the N inputs:
 #
@@ -53,26 +23,40 @@
 # complex classification problem can be solved with hidden layers. The question
 # that I'm still unable to fully answer is why would we ever need more than 1
 # layer, beyond the need to add different logic (CNN, RNN, dropout, softmax,
-# etc.)
+# etc.). What would happen in this case, is that each combination of the inputs
+# observed in the data will be learned as it's own specific boolean expression:
 #
-# That's obviously inefficient (16 Inputs => 65,536 hidden neurons). In fact,
-# most real-life cases will not have nearly as many samples in the training data
-# set - so the upper-bound of the number of combinations is:
+#   h1 = x1 AND  x2 AND  x3 AND ...
+#   h2 = x1 AND  x2 AND !x3 AND ...
+#   h3 = x1 AND !x2 AND  x3 AND ...
+#   ...
+#
+# And the final layer will just be a long OR sequence combining all of the
+# truthy expressions:
+#
+#   y = h1 OR h3 OR ...
+#
+# This way, the network just learns all of the combinations, without finding a
+# more simple theory of how the individual inputs interac. That's obviously
+# massively inefficient (16 inputs => 65,536 hidden neurons). In fact, most
+# real-life cases will not have nearly as many samples in the training data set
+# so the upper-bound of the number of combinations is:
 #
 #   Upper-Bound: min(2^N, # of samples)
 #
-# But, beyond being inefficient, it's also non-elegant and non-intelligent as it
-# doesn't really learn complicated logic but simply remembers every possible
+# But, beyond being inefficient, it's also non-elegant and inintelligent as it
+# doesn't really learn interesting logic but simply remembers every possible
 # input.
 #
 # More importantly, in a setup like that, the system is more likely to over-fit
-# by the fact that it will tend to remember all of the training data and wouldn't
-# generalize correctly. This to me seems like another limitation of artificial
-# neural netowkrs, compared to biological ones, because adding the intelligence
-# (number of neurons/synapses) would result in loss of intelligence when
-# confronted with new data. Instead of learning the least amount of patterns to
-# understand the data, our learning procedure will conviniently learn the most
-# possible patterns - losing generalization in the process.
+# by the fact that it will tend to remember all of the training data instead
+# of learning the interactions and correlations between the individual inputs
+# and thus wouldn't generalize to unseen data. This to me seems like another
+# limitation of artificial neural netowkrs, compared to biological ones: adding
+# brain-power (number of neurons/synapses) would result in loss of intelligence
+# when confronted with new data. Instead of learning the least amount of
+# patterns to understand the data, our learning procedure will conviniently
+# learn all of the possible patterns - losing generalization in the process.
 #
 # By following Ockham's Razor - we're searching for the simplest model as it's
 # most likely the best. The subject of how to achieve this is not explored here
@@ -106,12 +90,11 @@ X = np.array([
     [ 1., 1., 1., 1. ],
 ])
 
-# random output - there's no intelligence here, but with 2^N hidden neurons
-# we'll always be able to fully eliminate the error.
+# random output - there's no logic here, but with 2^N hidden neurons we'll
+# always be able to fully eliminate the error.
 T = np.random.choice([0, 1], len(X))
 T = np.eye(2)[T]
 
-# Layer represents a single neural network layer of weights
 class Sigmoid(object):
     def __init__(self, n, m):
         self.W = np.random.randn(m, n + 1)
