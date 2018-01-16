@@ -30,8 +30,8 @@
 # Much better! If anything, derivatives would stay unchanged, or get better.
 #
 # There are other types of activation functions worth mentioning, but will not
-# be covered further here - first is the hyperbolic function (tanh) which is
-# very similar to sigmoid:
+# be covered further here - for example: the hyperbolic function (tanh) which is
+# a scaled version of sigmoid:
 #
 #   y = tanh(z) = 2 * sigmoid(2z) - 1
 #   dy/dz = 1 - y^2   # look it up on line to learn more
@@ -39,31 +39,6 @@
 # It has an interesting property that it's mean is at zero (when z = 0, y = 0,
 # instead of y = .5 in sigmoid). We will not implement it here as it's a bit
 # redundant.
-#
-# Second is the Rectifier Linear Unit (ReLU):
-#
-#   y = max(0, z)
-#   dy/dz = { 1 when z > 0 ; 0 otherwise }
-#
-# It's basically just like having no activation function, except that negative
-# values are clamped at zero. A few things to note:
-#   1. It's still non-linear (below and above 0) and proven to be able to
-#       approximate any non-linear function when combined in multiple layers.
-#   2. It has the range of [0...inf] which means that it might be a bit
-#       inefficient when used with the squared difference error function (it's
-#       more often used with softmax/cross-entropy - possibly discussed later).
-#   3. It generates sparse activations. Because negative y values are clamped at
-#       zero, many of the neurons (the irrelevant ones that do not contribute to
-#       the prediction of a given class) are not going to fire. This makes the
-#       model more elegant, simpler and easier to debug because we don't have a
-#       lot of negative numbers - we're only seeing the ones that actually
-#       affect the output. In a multi-layered network, it means that the input
-#       to the next layer is more likely to have a lot of zeros instead of a
-#       dense activations where all of the neruons have some value.
-#   4. Because the derivative is sometimes zero, it means that weights can get
-#       stuck at zero and stop responding to errors. This is called the dying
-#       ReLU problem and there are several variations, like Leaky ReLU that help
-#       prevent that (at a cost of sparsity)
 #
 # A NOTE about non-linearity: everything we've done until now is obviously
 # limited to linear problems. For example, our code cannot learn to approximate
@@ -107,6 +82,13 @@ X = OneHot(INPUTS).encode([[c] for c in X])
 T = OneHot(OUTPUTS).encode([[c] for c in T])
 data = zip(X, T)
 
+# NOTE about the initial weights. When using sigmoid, it's best to start with
+# very small weights (around zero), because when z = 0, the derivative of
+# sigmoid is largest (0.25). if we would pick large initial weights (over 1-2),
+# the sigmoid(1-2) function would be almost flat, limiting at 0 or 1, and thus
+# its derivative will be close to 0. It will learn many iterations to move the
+# weights enough for the weights to have a larger effect. This is an issue known
+# as "Vanishing Gradients".
 w = np.random.randn(len(OUTPUTS), len(INPUTS) + 1) * 0.01
 for i in xrange(EPOCHS):
     e = 0

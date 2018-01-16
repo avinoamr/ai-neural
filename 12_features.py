@@ -35,6 +35,8 @@ T = np.array([ [0.],     [1.],     [1.],     [0.]     ])
 
 class Sigmoid(object):
     def __init__(self, n, m):
+        # NOTE that we're not using small weights here. To be discussed further
+        # at ReLU.
         self.W = np.random.random((m, n + 1))
 
     # forward pass is the same as before.
