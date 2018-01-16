@@ -20,7 +20,7 @@ import numpy as np
 np.random.seed(1)
 
 ALPHA = 1
-EPOCHS = 1500
+EPOCHS = 600
 H = 2 # number of hidden neurons
 
 # In this example we're intentionally designing the data such that it's not
@@ -29,7 +29,7 @@ H = 2 # number of hidden neurons
 # where one feature may produce different results, depending on the activation
 # on a different feature. We'll use the typical XOR example.
 #
-# XOR = !(x1 AND x2) AND (x1 OR x2)
+# XOR = (x1 AND !x2) OR (!x1 AND x2)
 X = np.array([ [0., 0.], [0., 1.], [1., 0.], [1., 1.] ])
 T = np.array([ [0.],     [1.],     [1.],     [0.]     ])
 
@@ -37,7 +37,7 @@ class Sigmoid(object):
     def __init__(self, n, m):
         # NOTE that we're not using small weights here. To be discussed further
         # at ReLU.
-        self.W = np.random.random((m, n + 1))
+        self.W = np.random.randn(m, n + 1)
 
     # forward pass is the same as before.
     def forward(self, x):
@@ -126,8 +126,8 @@ for x, t in data:
 print "l1.W=", l1.W
 
 # l1.W = [
-#   [-3.43359201 -3.42420851  4.94561233]
-#   [-5.99802997 -5.89528226  2.03292505]
+#   [ 5.52451726 -5.58909541 -3.28827519]
+#   [-4.5160283   4.28956487 -2.40307873]
 # ]
 #
 # Remember from classification we can think of the boolean output as: wx > -b.
@@ -135,24 +135,19 @@ print "l1.W=", l1.W
 # closer to 0 than to 1, while a positive input will be the opposite. This we've
 # learned the following boolean expressions in the hidden layer:
 #
-#   h1 = !x1 OR  !x2        => Same as: !(x1 AND x2)
-#   h2 = !x1 AND !x2        => Same as: !(x1 OR x2)
+#   h1 = x1 AND !x2
+#   h2 = !x1 AND x2
 #
 # This isn't XOR yet, so let see what the second layer is doing:
 print "l2.W=", l2.W
 
-# l2.W = [
-#   [ 6.7717498  -7.26318539 -2.96906094]
+# l2.W= [
+#   [ 6.28464247  6.3605273  -3.09942556]
 # ]
 #
 # Again, if we apply wx > -b:
 #
-#   y = h1 AND !h2
-#       ^^      ^^              # replace with the expressions we defined above
-#
-#   y = !(x1 AND x2) AND !(!(x1 OR x2))
-#                        ^^^^   # remove the double negatives
-#
-#   y = !(x1 AND x2) AND (x1 OR x2)
+#   y = h1 OR h2    # replace h1, h2 with the expressions we defined above
+#   y = (x1 AND !x2) OR (!x1 AND x2)
 #
 # That's the definition of XOR!
