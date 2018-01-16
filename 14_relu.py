@@ -85,8 +85,11 @@
 #   2. Its derivative in the linear part (z > 0) is a constant 1, so weights can
 #       be arbitrarily big (good for learning the hidden layers)
 #   3. Its derivative in the flat part (z < 0) is a constant 0. So once it gets
-#       there, there will be no learning. This is the biggest known problem with
-#       ReLU and is mitigated by a few variants, like the Leaky ReLU [1]
+#       there, there will be no learning. Known as the "Dying ReLU Problem" this
+#       is the biggest known problem with ReLUs and is mitigated by a few
+#       variants, like the Leaky ReLU [1]. This limitaiton makes it important to
+#       use a small learning rate in order to prevent the model from going too
+#       far in the negative direction early in the learning.
 #
 # [1] https://en.wikipedia.org/wiki/Rectifier_(neural_networks)#Leaky_ReLUs
 import numpy as np
