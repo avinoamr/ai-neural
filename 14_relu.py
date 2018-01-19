@@ -96,7 +96,7 @@ import numpy as np
 np.random.seed(1)
 
 ALPHA = 0.05        # back to a normal learning rate
-EPOCHS = 500
+EPOCHS = 300
 H = 2
 
 # we will re-implement the XOR example with ReLU.
@@ -122,6 +122,30 @@ class ReLU(object):
         self.W -= ALPHA * dw
         return np.delete(dx, -1)
 
+class LeakyReLU(object):
+    def __init__(self, n, m):
+        self.W = np.random.random((m, n + 1))
+
+    def forward(self, x):
+        x = np.append(x, 1.)
+        z = np.dot(self.W, x)
+        y = z
+        y[z < 0] *= 0.01
+
+        self._last = x, y
+        return y
+
+    def backward(self, dy):
+        x, y = self._last
+        dz = np.ones(y.shape)
+        dz[y < 0] = 0.01
+        dz *= dy
+
+        dw = np.array([d * x for d in dz])
+        dx = np.dot(dz, self.W)
+        self.W -= ALPHA * dw
+        return np.delete(dx, -1)
+
 class SquaredError(object):
     def forward(self, x):
         self._y = x
@@ -136,8 +160,8 @@ class SquaredError(object):
         return y - t
 
 data = zip(X, T)
-l1 = ReLU(X.shape[1], H)
-l2 = ReLU(H, T.shape[1])
+l1 = LeakyReLU(X.shape[1], H)
+l2 = LeakyReLU(H, T.shape[1])
 l3 = SquaredError()
 layers = [l1, l2, l3]
 for i in xrange(EPOCHS):
