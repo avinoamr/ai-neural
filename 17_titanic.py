@@ -21,7 +21,7 @@ import numpy as np
 import copy
 np.random.seed(1)
 
-ALPHA = 0.5
+ALPHA = 0.01
 EPOCHS = 25000000
 H = 30
 INPUTS = [
@@ -56,11 +56,93 @@ class OneHot(list):
             x[i][indices] = 1.
         return x
 
+class ReLU(object):
+    def __init__(self, n, m):
+        self.N, self.M = n, m
+        self.W = np.random.random((m, n + 1)) * 0.01
+
+    def forward(self, xs):
+        bias = np.ones((xs.shape[0], 1))
+        xs = np.concatenate((xs, bias), axis=1)
+        ys = np.zeros((len(xs), self.M))
+        for i, x in enumerate(xs):
+            z = np.dot(self.W, x)
+            y = np.maximum(0, z)
+            ys[i] = y
+
+        self._last = xs, ys
+        return ys
+
+    def backward(self, dys):
+        xs, ys = self._last
+        dxs = np.zeros((len(dys), self.N))
+        dws = np.zeros((len(dys),) + self.W.shape)
+        for i, dy in enumerate(dys):
+            x = xs[i]
+            y = ys[i]
+
+            # how the weights affect total error (derivative w.r.t w)
+            dz = dy * (y > 0) * 1. # if y > 0: 1, otherwise: 0.
+            dw = np.array([d * x for d in dz])
+            dws[i] = dw
+
+            # how the input (out of previous layer) affect total error
+            # (derivative w.r.t x). Derivates of the reverse of the forward pass
+            dx = np.dot(dz, self.W)
+            dx = np.delete(dx, -1) # remove the bias input derivative
+            dxs[i] = dx
+
+        # update
+        dw = sum(dws) / len(dws) # average out the weight derivatives
+        self.W -= ALPHA * dw
+        return dxs
+
+class LeakyReLU(object):
+    def __init__(self, n, m):
+        self.N, self.M = n, m
+        self.W = np.random.rand(m, n + 1) * 0.01
+
+    def forward(self, xs):
+        bias = np.ones((xs.shape[0], 1))
+        xs = np.concatenate((xs, bias), axis=1)
+        ys = np.zeros((len(xs), self.M))
+        for i, x in enumerate(xs):
+            z = np.dot(self.W, x)
+            y = z
+            y[z < 0] *= 0.01
+            ys[i] = y
+
+        self._last = xs, ys
+        return ys
+
+    def backward(self, dys):
+        xs, ys = self._last
+        dxs = np.zeros((len(dys), self.N))
+        dws = np.zeros((len(dys),) + self.W.shape)
+        for i, dy in enumerate(dys):
+            x = xs[i]
+            y = ys[i]
+
+            # how the weights affect total error (derivative w.r.t w)
+            dz = np.ones(y.shape)
+            dz[y < 0] = 0.01
+            dz *= dy
+            dw = np.array([d * x for d in dz])
+            dws[i] = dw
+
+            # how the input (out of previous layer) affect total error
+            # (derivative w.r.t x). Derivates of the reverse of the forward pass
+            dx = np.dot(dz, self.W)
+            dx = np.delete(dx, -1) # remove the bias input derivative
+            dxs[i] = dx
+
+        # update
+        dw = sum(dws) / len(dws) # average out the weight derivatives
+        self.W -= ALPHA * dw
+        return dxs
+
 # Layer represents a single neural network layer of weights
 class TanH(object):
-    W = None
-    _last = (None, None) # input, output
-
     def __init__(self, n, m):
         self.N, self.M = n, m
         self.W = np.random.randn(m, n + 1) * 0.01
