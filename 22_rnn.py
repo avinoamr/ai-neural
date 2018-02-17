@@ -40,7 +40,7 @@
 import numpy as np
 np.random.seed(1)
 
-EPOCHS = 100000
+EPOCHS = 150
 ALPHA = 0.05
 H = 5
 
@@ -50,18 +50,6 @@ H = 5
 
 # binary addition, can be defined, per digit as:
 #
-
-X = [
-    [2, 4],
-    [1, 1],
-    [3, 5],
-    [8, 2],
-    [18, 2],
-    [50, 11],
-    [7, 1]
-]
-
-T = [x[0] + x[1] for x in X]
 
 # convert the input numbers in a long string of binary digits. For example:
 # NOTE that this code is just data preparation, and therefore is not directly
@@ -106,8 +94,6 @@ def enc(X, T):
     X = np.array(X)
     T = np.array(T)
     return X, T
-
-# X, T = enc(X, T)
 
 class Recurrent(object):
     def __init__(self, n, m):
@@ -182,14 +168,13 @@ class Softmax(Linear):
 l1 = Recurrent(6, H)
 l2 = Softmax(H, 3)
 layers = [l1, l2]
-# data = zip(X, T)
 for i in xrange(EPOCHS):
     e = 0.
     accuracy = 0
 
     X, T = [], []
     for _ in range(10):
-        x0, x1 = np.random.randint(10), np.random.randint(10)
+        x0, x1 = np.random.randint(255), np.random.randint(255)
         X.append([x0, x1])
         T.append(x0 + x1)
 
