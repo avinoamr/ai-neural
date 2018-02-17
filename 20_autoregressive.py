@@ -5,6 +5,12 @@
 # multiple time steps. For example, numerical addition cannot be learned because
 # it relies on the carry value per digit. Other examples include language
 # modeling, translation, video capturing, etc.
+#
+# To solve this limitation we need to introduce a memory mechanism, one that's
+# able to access state over time. The output of a given event is dependent on
+# the input/output of the previous events. One naive implementation for this
+# is auto-regressive models. These models simply feed the output from previous
+# time steps as part of the new input to a normal model.
 import numpy as np
 np.random.seed(1)
 
@@ -25,6 +31,10 @@ H = 10
 # A normal, non-recurrent network cannot learn this correlation, because its
 # API is limited to a single input/output pair at a time. It has no knowledge
 # of the previous day's output.
+#
+# It's clear that for this problem, we only need to access the output of the
+# previous time-steps, but in other, more complicated problems we may need to
+# access several previous time-steps.
 #
 # [1] https://www.youtube.com/watch?v=UNmqTiOnRfg
 X = "rrrsssrrsrsrsrrrssrsrsssrrsrsrrssrsrsrrsrrrssrssrrsrssrrsrrrrssrsr"
@@ -80,9 +90,10 @@ class Softmax(Linear):
         dy = p - t
         return super(Softmax, self).backward(dy)
 
-# we will simply feed the previous day's output as part of the new input.
-l1 = Sigmoid(5, H)
-l2 = Softmax(H, 3)
+# we will feed the input x concatenated by the previous output y. So the input
+# to our first layer is the size of x plus the size of y.
+l1 = Sigmoid(X.shape[1] + T.shape[1], H)
+l2 = Softmax(H, T.shape[1])
 layers = [l1, l2]
 
 data = zip(X, T)
@@ -94,7 +105,12 @@ for i in xrange(EPOCHS):
     accuracy = 0
     for x, t in data:
 
-        # concatenate the previous output to the new input
+        # concatenate the previous output to the new input. This is how auto-
+        # regressive models learn to account for previous time-steps. In this
+        # case, we're only concatenating the first immediate previous output,
+        # but in many cases we may need to concatenate multiple previous time-
+        # steps. Also, in some implementation, a previous input in concatenated
+        # instead of a previous output.
         x = np.concatenate((y, x))
 
         # forward
