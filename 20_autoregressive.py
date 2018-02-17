@@ -110,4 +110,3 @@ for i in xrange(EPOCHS):
     e /= len(data)
     accuracy = accuracy * 100 / len(data)
     print "%s: ERROR = %s ; ACCURACY = %s%%" % (i, e, accuracy)
-    
