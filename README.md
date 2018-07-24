@@ -1,14 +1,11 @@
-# ai
-This repo documents my voyage into machine learning step-by-step.Coming from an
-engineering background, it was challenging for me to fully grasp the intuition
-around how the concepts of machine learning works without coding itmyself.
+# learn-ai
+My (flawed) journey into Machine Learning, documented step-by-step
 
-The code presented is evolutionary in the sense that it starts with the simple
-logic and over several files builds on to a complete real-life example (although
-perhaps a simple one).
+This repo documents my journey into machine learning step-by-step. Coming from
+an engineering background, it was challenging for me to fully grasp the
+intuition around machine learning works without coding it myself.
 
-**NOTE** that the code isn't necessarily perfectly correct, the comments may be
-wrong at times and there are some concepts that were skipped altogether. The
-point here is to build intuition via pure code, without relying on any machine
-learning libraries, and do it in a way that hopefully will allow my future-self
-to relearn the specifics as needed.
+This code, and commits, tells the story of how I taught myself machine
+learning, but it is __definitely, inarguably, terribly flawed and incorrect__. I
+know it before the first commit. It should not be considered a definitive guide,
+but just a story.
